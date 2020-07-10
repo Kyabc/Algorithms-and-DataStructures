@@ -24,16 +24,13 @@ std::pair<std::complex<double>, double> min_circle (std::vector<std::complex<dou
         return {p, r};
     };
     
-    // MinDisk
     std::shuffle (points.begin(), points.end(), std::mt19937(seed));
     circle d = make_circle_2(points[0], points[1]);
     for (int i = 2; i < n; i++) {
         if (not inner(points[i], d)) {
-            // MinDiskWithPoints
             d = make_circle_2(points[0], points[i]);
             for (int j = 1; j < i; j++) {
                 if (not inner(points[j], d)) {
-                    // MinDiskWith2Points
                     d = make_circle_2(points[i], points[j]);
                     for (int k = 0; k < j; k++) {
                         if (not inner(points[k], d)) {
