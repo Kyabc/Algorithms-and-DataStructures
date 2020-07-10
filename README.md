@@ -1,6 +1,6 @@
 # Algorithms-and-DataStructures
 [kya](https://twitter.com/kya_ski)の競技プログラミングのライブラリです.
-- verify をしていないものが多いです
+verify をしていないものが多いです. 誤字脱字も多いです(要検証)
 
 ***
 
