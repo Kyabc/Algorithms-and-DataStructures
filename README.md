@@ -4,7 +4,7 @@ verify をしていないものが多いです. 誤字脱字も多いです(要�
 
 ***
 
-## data-structures
+## デー🐙う🐘
 - segment tree
 - union find
 - binary trie
