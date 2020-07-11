@@ -19,8 +19,7 @@ struct combination {
 };
 
 
-// n が大きい場合
-// Time Complexity : O(r)
+
 template<int mod>
 modint<mod> binom(int n, int r) {
     if (r < 0 or r > n) return 0;
