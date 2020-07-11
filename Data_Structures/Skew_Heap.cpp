@@ -1,20 +1,3 @@
-//
-//  Skew Heap
-//
-//  cf.
-//    noshi91 : skew heap / data-structures
-//      https://scrapbox.io/data-structures/Skew_Heap
-//    hos : Leftist Heap & Skew Heap
-//      http://hos.ac/blog/#blog0001
-//    ei1333 : マージ可能ヒープ(Skew-Heap) / Luzhiled's memo
-//      https://ei1333.github.io/luzhiled/snippets/structure/skew-heap.html
-//
-//  verify
-//	  AIZU ONLINE JUDGE - 単一始点最短経路
-//		https://onlinejudge.u-aizu.ac.jp/status/users/kyaaa/submissions/1/GRL_1_A/judge/4597351/C++14
-//
-
-
 #include <functional>
 #include <memory>
 #include <cassert>
