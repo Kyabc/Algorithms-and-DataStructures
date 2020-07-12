@@ -1,57 +1,58 @@
 # 🐙🐘🦍
 [kya](https://twitter.com/kya_ski)の競技プログラミングのライブラリです.
-verify をしていないものが多いです. 誤字脱字も多いです(要検証)
+verify したものには "[x]" をつけます.
 
 ***
 
 ## デー🐙う🐘
 - **segment tree**
-  - dual segment tree
-  - dynamic segment tree
-  - lazy segment tree
-  - segment tree
+  [ ] dual segment tree
+  [x] dynamic segment tree
+  [x] lazy segment tree
+  [x] segment tree
 - **union find**
-  - partially persistent union find
-  - union find
-- binary trie
-- modint
-- queue aggregation
-- skew heap
+  [ ] partially persistent union find
+  [x] union find
+[x] binary trie
+[x] modint
+[ ] queue aggregation
+[ ] skew heap
 
 ## geometric
-- minimum inclusion circle
+[x] minimum inclusion circle
 
 ## graph
 - **flow**
-  - dinic
-  - ford-fulkerson
-  - minimum cost flow (primal-dual?)
+  [ ] dinic
+  [ ] ford-fulkerson
+  [ ] minimum cost flow (primal-dual?)
 - **minimum spanning tree**
-  - directed mst
-  - manhattan mst
-  - mst (kruskal)
+  [x] directed mst
+  [x] manhattan mst
+  [x] mst (kruskal)
 - **shortest path**
-  - bellman-ford
-  - bfs on complement graph
-  - dijkstra
-  - warshall-floyd
-- graph template
-- heavy light decomposition
-- low-link
-- lowest common ancestor
-- maximum independent set
-- strongly connected component
-- topological sort
-- tree diameter
-- two edge connected component
+  [x] bellman-ford
+  [ ] bfs on complement graph
+  [x] dijkstra
+  [x] warshall-floyd
+[x] graph template
+[x] heavy light decomposition
+[ ] low-link
+[ ] lowest common ancestor
+[ ] maximum independent set
+[ ] strongly connected component
+[ ] topological sort
+[ ] tree diameter
+[x] two edge connected component
 
 ## number theory
-- combination
-- divisor
-- eratosthenes's sieve
-- euler's phi
-- matrix multiplication and power
-- miller rabin
+[x] combination
+[x] permutation
+[ ] divisor
+[ ] eratosthenes's sieve
+[ ] euler's phi
+[ ] matrix multiplication and power
+[ ] miller rabin
 
 ***
 
