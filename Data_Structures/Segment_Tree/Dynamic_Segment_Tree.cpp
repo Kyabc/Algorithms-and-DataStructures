@@ -22,7 +22,7 @@ private :
     size_type n;
     const F f;
     const G g;
-    value_type ie;
+    const value_type ie;
     node_ptr root;
 
     value_type get_value (const node_ptr &node) const noexcept {
