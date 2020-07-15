@@ -18,6 +18,7 @@
 - [x] modint
 - [ ] queue aggregation
 - [ ] skew heap
+- [x] matrix
 
 ## geometric
 - [x] minimum inclusion circle
