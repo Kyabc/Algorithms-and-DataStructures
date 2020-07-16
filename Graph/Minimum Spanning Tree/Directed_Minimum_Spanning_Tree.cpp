@@ -1,8 +1,8 @@
+// skew heap must be included
+
 #include <vector>
 #include <numeric>
 #include <algorithm>
-
-// dependence on skew heap
 
 template<class T>
 struct directed_minimum_spanning_tree {
@@ -47,7 +47,7 @@ public :
 		auto f1 = [](const data &a, const value_type &b) { return (data(a.first - b, a.second)); };
 		auto f2 = [](const value_type &a, const value_type &b) { return (a + b); };
 		for (int i = 0; i < n; i++) heaps.push_back(heap(f1, f2, 0));
-		for (int i = 0; i < int(edges.size()); i++) heaps[edges[i].to].push(data(edges[i].cost, i));
+		for (int i = 0; i < int(edges.size()); i++) heaps[edges[i].to].emplace(edges[i].cost, i);
 
 		status[r] = 2; par[r] = r;
 		std::iota(uf.begin(), uf.end(), 0);
