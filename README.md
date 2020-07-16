@@ -7,17 +7,17 @@
 
 ## デー🐙う🐘
 - **segment tree**
-  - [ ] dual segment tree
+  - [x] dual segment tree
   - [x] dynamic segment tree
   - [x] lazy segment tree
   - [x] segment tree
 - **union find**
-  - [ ] partially persistent union find
+  - [x] partially persistent union find
   - [x] union find
 - [x] binary trie
 - [x] modint
-- [ ] queue aggregation
-- [ ] skew heap
+- [x] queue aggregation
+- [x] skew heap
 - [x] matrix
 
 ## geometric
