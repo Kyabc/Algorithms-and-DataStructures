@@ -51,12 +51,12 @@ public :
 		}
 	}
 
-	const value_type &operator[] (int i) const {
+	const value_type &operator[] (int i) {
 		apply(i + n);
 		return node[i + n];
 	}
 
-	const value_type &at (int i) const {
+	const value_type &at (int i) {
 		apply(i + n);
 		return (node.at(i));
 	}
