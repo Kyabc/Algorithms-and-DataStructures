@@ -3,17 +3,22 @@
 - [x] verify 済
 - [ ] 未 verify
 
+**やる**
+- 動的遅延セグ木
+- 速い最小費用流
+
 ***
 
 ## デー🐙う🐘
 - **segment tree**
-  - [x] dual segment tree
-  - [x] dynamic segment tree
-  - [x] lazy segment tree
   - [x] segment tree
+  - [x] lazy segment tree
+  - [x] dynamic segment tree
+  - [ ] dynamic lazy segment tree
+  - [x] dual segment tree
 - **union find**
-  - [x] partially persistent union find
   - [x] union find
+  - [x] partially persistent union find
 - [x] binary trie
 - [x] modint
 - [x] queue aggregation
