@@ -45,11 +45,6 @@ public :
 		}
 	}
 
-	template<class Sequence>
-	void build (const Sequence &monoid) {
-		build(monoid.begin(), monoid.end());
-	}
-
 	void set_val (int i, const value_type &x) {
 		i += n;
 		node[i] = x;

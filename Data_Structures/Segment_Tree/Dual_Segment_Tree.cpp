@@ -19,7 +19,7 @@ private :
 		node[i] = ie;
 	}
 
-	void apply (int i) {
+	void topdown_update (int i) {
 		for (int j = hight; j > 0; j--) propagate(i >> j);
 	}
 
@@ -37,14 +37,14 @@ public :
 		for (int i = n; i < 2 * n; i++) node[i] = x;
 	}
 	
-	template<class iter>
-	void build (iter l, iter r) {
+	template<class Iterator>
+	void build (Iterator l, Iterator r) {
 		assign(r - l);
 		for (int i = n; l != r; i++, l++) node[i] = (*l);
 	}
 
-	void operate (int a, int b, const value_type &x) {
-		apply(a + n); apply(b + n - 1);
+	void update (int a, int b, const value_type &x) {
+		topdown_update(a + n); topdown_update(b + n - 1);
 		for (int l = a + n, r = b + n; l < r; l >>= 1, r >>= 1) {
 			if (l & 1) { node[l] = f(node[l], x); l++; }
 			if (r & 1) { r--; node[r] = f(node[r], x); }
@@ -52,12 +52,12 @@ public :
 	}
 
 	const value_type &operator[] (int i) {
-		apply(i + n);
+		topdown_update(i + n);
 		return node[i + n];
 	}
 
 	const value_type &at (int i) {
-		apply(i + n);
+		topdown_update(i + n);
 		return (node.at(i));
 	}
 

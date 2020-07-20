@@ -31,13 +31,13 @@ private :
 		lazy[i] = ie1;
 	}
 
-	void apply (int i) {
+	void topdown_update (int i) {
 		for (int j = hight; j > 0; j--) {
 			propagate(i >> j);
 		}
 	}
 
-	void recalc (int i) {
+	void bottomup_update (int i) {
 		while (i >>= 1) {
 			node[i] = f(reflect(i << 1 | 0), reflect(i << 1 | 1));
 		}
@@ -55,14 +55,14 @@ public :
 		node.clear(); lazy.clear();
 	}
 
-	void assign (int _n) noexcept {
+	void assign (int _n) {
 		n = 1; hight = 0;
 		while (n < _n) { n <<= 1; hight++; }
 		node.assign(2 * n, ie0);
 		lazy.assign(2 * n, ie1);
 	}
 
-	void assign (int _n, const value_type &x) noexcept {
+	void assign (int _n, const value_type &x) {
 		assign(_n);
 		std::fill(node.begin() + n, node.end(), x);
 		for (int i = n; i--> 0;) {
@@ -70,8 +70,8 @@ public :
 		}
 	}
 
-	template<class iter>
-	void build (iter l, iter r) noexcept {
+	template<class Iterator>
+	void build (Iterator l, Iterator r) {
 		assign(r - l);
 		for (int i = n; l != r; i++, l++) node[i] = (*l);
 		for (int i = n - 1; i > 0; i--) {
@@ -80,19 +80,19 @@ public :
 	}
 
 	void update (int a, int b, const operator_type &x) {
-		apply(a + n);
-		apply(b + n - 1);
+		topdown_update(a + n);
+		topdown_update(b + n - 1);
 		for (int l = a + n, r = b + n; l < r; l >>= 1, r >>= 1) {
 			if (l & 1) { lazy[l] = h(lazy[l], x); l++; }
 			if (r & 1) { r--; lazy[r] = h(lazy[r], x); }
 		}
-		recalc(a + n);
-		recalc(b + n - 1);
+		bottomup_update(a + n);
+		bottomup_update(b + n - 1);
 	}
 
 	value_type fold (int l, int r) {
-		apply(l + n);
-		apply(r + n - 1);
+		topdown_update(l + n);
+		topdown_update(r + n - 1);
 		value_type vl = ie0, vr = ie0;
 		for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
 			if (l & 1) { vl = f(vl, reflect(l)); l++; }
