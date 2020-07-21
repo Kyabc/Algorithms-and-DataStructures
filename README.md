@@ -14,7 +14,6 @@
   - [x] segment tree
   - [x] lazy segment tree
   - [x] dynamic segment tree
-  - [ ] dynamic lazy segment tree
   - [x] dual segment tree
 - **union find**
   - [x] union find
