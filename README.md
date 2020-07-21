@@ -3,10 +3,6 @@
 - [x] verify 済
 - [ ] 未 verify
 
-**やる**
-- 動的遅延セグ木
-- 速い最小費用流
-
 ***
 
 ## デー🐙う🐘
@@ -18,6 +14,7 @@
 - **union find**
   - [x] union find
   - [x] partially persistent union find
+  - [x] potentialized union find
 - [x] binary trie
 - [x] modint
 - [x] queue aggregation
