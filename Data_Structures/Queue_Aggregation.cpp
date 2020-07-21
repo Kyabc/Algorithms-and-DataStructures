@@ -16,7 +16,7 @@ private :
     std::stack<node> front_stack, back_stack;
 
 public : 
-	queue_aggregation () : f([](const value_type &a, const value_type &b) { return std::min(a, b); }) { }
+    queue_aggregation () : f([](const value_type &a, const value_type &b) { return std::min(a, b); }) { }
 
     queue_aggregation (const F &f) : f(f) { }
 
