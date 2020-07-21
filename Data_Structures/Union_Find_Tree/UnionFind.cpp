@@ -1,27 +1,37 @@
 #include <vector>
 
 struct union_find {
+    using size_type = std::size_t;
 private :
-    std::size_t sz;
+    size_type _size;
     std::vector<int> node;
 public :
-    union_find (int sz) : node(sz, -1), sz(sz) { }
+    union_find (int n) : node(n, -1), _size(n) { }
 
     bool unite (int x, int y) {
         if ((x = root(x)) == (y = root(y))) return false;
         if (node[x] > node[y]) std::swap(x, y);
         node[x] += node[y];
         node[y] = x;
-        sz--;
+        _size--;
         return true;
     }
 
-    bool same (int x, int y) { return root(x) == root(y); }
+    bool same (int x, int y) {
+        return (root(x) == root(y));
+    }
 
-    int root (int x) { return node[x] < 0 ? x : node[x] = root(node[x]); }
+    int root (int x) {
+        if (node[x] < 0) return x;
+        return node[x] = root(node[x]);
+    }
 
-    std::size_t size (int x) { return (std::size_t(-node[root(x)])); }
+    size_type size (size_type x) {
+        return (size_type(-node[root(x)]));
+    }
 
-    std::size_t size () { return sz; }
+    const size_type &size () const noexcept {
+        return _size;
+    }
 
 };
