@@ -15,6 +15,7 @@
   - [x] union find
   - [x] partially persistent union find
   - [x] potentialized union find
+  - [x] 2D union find
 - [x] binary trie
 - [x] modint
 - [x] queue aggregation
