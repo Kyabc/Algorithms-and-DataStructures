@@ -51,7 +51,7 @@ private :
 
 	value_type min_element (node_ptr &cur, int i, const value_type &x) {
 		if (cur->lazy) propagate(cur, i);
-        const int b = (x >> i & 1);
+		const int b = (x >> i & 1);
 		if (size(cur->next[b])) {
 			if (i == 0) return value_type(0);
 			return (min_element(cur->next[b], i - 1, x));
@@ -64,20 +64,20 @@ private :
 
 	value_type max_element (node_ptr &cur, int i, const value_type &x) {
 		if (cur->lazy) propagate(cur, i);
-        const int b = (x >> i & 1);
+		const int b = (x >> i & 1);
 		if (size(cur->next[b])) {
 			if (i == 0) return value_type(0);
 			return max_element(cur->next[b], i - 1, x);
 		} else {
-            if (i == 0) return value_type(1);
+			if (i == 0) return value_type(1);
 			value_type max = (value_type(1) << i);
 			return (max + max_element(cur->next[b ^ 1], i - 1, x));
-        }
+		}
 	}
 
 	value_type kth_element (node_ptr &cur, int i, size_type k, const value_type &x) {
 		if (cur->lazy) propagate(cur, i);
-        const int b = (x >> i & 1);
+		const int b = (x >> i & 1);
 		const size_type _size = size(cur->next[b]);
 		if (_size >= k) {
 			if (i == 0) return value_type(0);
