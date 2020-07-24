@@ -1,5 +1,3 @@
-// skew heap must be included
-
 #include <vector>
 #include <numeric>
 #include <algorithm>
@@ -42,12 +40,14 @@ public :
 		using heap = skew_heap<data, value_type, std::greater<data>>;
 		const int n = int(par.size());
 		value_type sum_cost = 0;
-		std::vector<heap> heaps;
 		std::vector<int> order, status(n, 0), incoming(n, -1), prev_edge(edges.size());
 		auto f1 = [](const data &a, const value_type &b) { return (data(a.first - b, a.second)); };
 		auto f2 = [](const value_type &a, const value_type &b) { return (a + b); };
-		for (int i = 0; i < n; i++) heaps.push_back(heap(f1, f2, 0));
-		for (int i = 0; i < int(edges.size()); i++) heaps[edges[i].to].emplace(edges[i].cost, i);
+		std::vector<heap> heaps(n, heap(f1, f2, 0));
+
+		for (int i = 0; i < int(edges.size()); i++) {
+			heaps[edges[i].to].emplace(edges[i].cost, i);
+		}
 
 		status[r] = 2; par[r] = r;
 		std::iota(uf.begin(), uf.end(), 0);

@@ -11,10 +11,10 @@ struct skew_heap {
 	using size_type = std::size_t;
 	using const_reference = const value_type &;
 private : 
-	const Compare comp;
-	const F f;
-	const G g;
-	const operator_type ie;
+	Compare comp;
+	F f;
+	G g;
+	operator_type ie;
 	size_type _size;
 
 	struct node {
@@ -55,13 +55,31 @@ private :
 		return (std::move(a));
 	}
 
+	void heap_copy (node_ptr &cur, const node_ptr &_copy) {
+		if (not _copy) return;
+		if (cur) cur.reset();
+		cur = std::make_unique<node>(_copy->value, _copy->lazy);
+		if (_copy->left) heap_copy(cur->left, _copy->left);
+		if (_copy->right) heap_copy(cur->right, _copy->right);
+	}
+
 public : 
+	explicit skew_heap () : f([](const value_type &a, const operator_type &b) { return a; }),
+							g([](const operator_type &a, const operator_type &b) { return a; }),
+							comp(), ie(operator_type()), _size(0), root(nullptr) { }
 
 	explicit skew_heap (const F &f, const G &g, const operator_type &ie) : 
 		f(f), g(g), comp(), ie(ie), _size(0), root(nullptr) { }
 
 	explicit skew_heap (skew_heap&& rhs) noexcept :
 		f(rhs.f), g(rhs.g), comp(rhs.comp), ie(rhs.ie), _size(rhs._size), root(std::move(rhs.root)) { }
+
+	skew_heap (const skew_heap &rhs) : f(rhs.f), g(rhs.g), comp(rhs.comp), ie(rhs.ie), _size(rhs._size) {
+		clear();
+		heap_copy(root, rhs.root);
+	}
+
+	~skew_heap () { }
 
 	constexpr size_type size () const noexcept {
 		return (_size);
@@ -71,7 +89,7 @@ public :
 		return (not _size);
 	}
 
-	constexpr const_reference top () {
+	const_reference top () {
 		assert (not empty());
 		root = propagate(std::move(root));
 		return (root->value);
@@ -93,8 +111,7 @@ public :
         push(value_type(args...));
     }
 
-
-	void clear () {
+	void clear () noexcept {
 		while (not empty()) pop();
 	}
 
