@@ -106,10 +106,10 @@ public :
 		_size++;
 	}
 
-    template<class... Args>
-    void emplace (Args &&... args) {
-        push(value_type(args...));
-    }
+	template<class... Args>
+	void emplace (Args &&... args) {
+		push(value_type(args...));
+	}
 
 	void clear () noexcept {
 		while (not empty()) pop();
