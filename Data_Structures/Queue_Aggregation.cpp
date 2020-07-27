@@ -48,12 +48,6 @@ public :
 		front_stack.pop();
 	}
 
-	void clear () noexcept {
-		front_stack.clear();
-		back_stack.clear();
-		back_sum = identity;
-	}
-
 	value_type fold () {
 		if (front_stack.empty()) return back_sum;
 		return f(front_stack.top(), back_sum);
