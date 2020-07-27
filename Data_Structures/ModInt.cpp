@@ -1,47 +1,98 @@
 #include <iostream>
+#include <cassert>
 
-template<int mod>
+template<int Modulus>
 struct modint {
-    int x;
-    modint() : x(0) {}
-    modint(long long y) : x(y >= 0 ? y % mod : (mod - (-y) % mod) % mod) {}
-    modint &operator+=(const modint &p) { if((x += p.x) >= mod) x -= mod; return *this; }
-    modint &operator-=(const modint &p) { if((x += mod-p.x) >= mod) x -= mod; return *this; }
-    modint &operator*=(const modint &p) { x = (int)(1LL*x*p.x%mod); return *this; }
-    modint &operator/=(const modint &p) { *this *= p.inverse(); return *this; }
-    modint operator-() const { return modint(-x); }
-    modint operator+(const modint &p) const { return modint(*this) += p; }
-    modint operator-(const modint &p) const { return modint(*this) -= p; }
-    modint operator*(const modint &p) const { return modint(*this) *= p; }
-    modint operator/(const modint &p) const { return modint(*this) /= p; }
-    bool operator==(const modint &p) const { return x == p.x; }
-    bool operator!=(const modint &p) const { return x != p.x; }
-    modint inverse() const {
-        int a = x, b = mod, u = 1, v = 0, t;
-        while(b > 0) {
-			t = a / b;
-			a -= t * b;
-			std::swap(a, b);
-			u -= t * v;
-			std::swap(u, v);
+	using value_type = int;
+
+	static constexpr int mod = Modulus;
+	static_assert(mod > 1, "Modulus must be greater than 1");
+
+private :
+	value_type x;
+
+	template<class T>
+	static constexpr value_type normalize (T value) noexcept {
+		if (value < 0) {
+			value = (-value) % mod;
+			return (value ? value : mod - value);
 		}
-        return modint(u);
-    }
-    modint pow(long long e){
-        long long a = 1, p = x;
-        while(e > 0) {
-            if (e & 1) {a = (a * p) % mod; e--;}
-            else {p = (p * p) % mod; e /= 2;}
-        }
-        return modint(a);
-    }
-    friend std::ostream &operator<<(std::ostream &os, const modint<mod> &p) {
-        return os << p.x;
-    }
-    friend std::istream &operator>>(std::istream &is, modint<mod> &a) {
-        long long x;
-        is >> x;
-        a = modint<mod>(x);
-        return (is);
-    }
+		return (value % mod);
+	}
+
+public :
+	explicit constexpr modint () noexcept : x(0) { }
+
+	template<class T>
+	constexpr modint (T value) noexcept : x(normalize(value)) { }
+
+	constexpr modint operator+ () const noexcept {
+		return modint(*this);
+	}
+
+	constexpr modint operator- () noexcept {
+		if (x != 0) x = mod - x;
+		return modint(*this);
+	}
+
+	constexpr modint &operator+= (const modint &p) noexcept {
+		if ((x += p.x) >= mod) x -= mod;
+		return (*this);
+	}
+
+	constexpr modint &operator-= (const modint &p) noexcept {
+		if ((x += mod - p.x) >= mod) x -= mod;
+		return (*this);
+	}
+
+	constexpr modint &operator*= (const modint &p) noexcept {
+		x = (int)(1LL * x * p.x % mod);
+		return (*this);
+	}
+
+	constexpr modint &operator/= (const modint &p) noexcept {
+		return ((*this) *= p.inverse());
+	}
+
+	constexpr modint operator+ (const modint &p) const noexcept {
+		return (modint(*this) += p);
+	}
+
+	constexpr modint operator- (const modint &p) const noexcept {
+		return (modint(*this) -= p);
+	}
+
+	constexpr modint operator* (const modint &p) const noexcept {
+		return (modint(*this) *= p);
+	}
+
+	constexpr modint operator/ (const modint &p) const noexcept {
+		return (modint(*this) /= p);
+	}
+
+	constexpr modint pow (long long exp) const noexcept {
+		modint value(1), buff(x);
+		while (exp) {
+			if (exp & 1) value *= buff;
+			buff *= buff;
+			exp >>= 1;
+		}
+		return value;
+	}
+
+	constexpr modint inverse () const noexcept {
+		return pow(Modulus - 2);
+	}
+
+	friend std::ostream &operator<< (std::ostream &os, const modint &p) {
+		return (os << p.x);
+	}
+
+	friend std::istream &operator>> (std::istream &is, modint &p) {
+		long long v;
+		is >> v;
+		p = modint(v);
+		return (is);
+	}
+
 };
