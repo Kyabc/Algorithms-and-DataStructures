@@ -58,5 +58,4 @@
 - [ ] divisor
 - [ ] eratosthenes's sieve
 - [ ] euler's phi
-- [ ] matrix multiplication and power
-- [ ] miller rabin
+- [x] miller rabin
