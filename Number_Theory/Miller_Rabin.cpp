@@ -1,57 +1,53 @@
-struct MillerRabin {
-    using lint = __uint128_t;
-private : 
-    const lint v1[3] = {2, 7, 61};
-    const lint v2[7] = {2, 3, 5, 7, 11, 13, 17};
-    const lint v3[7] = {2, 325, 9375, 28178, 450775, 9780504, 1795265022};
-public : 
-    inline lint modpow(lint x, lint k, lint m){
-        lint a = 1, p = x;
-        while(k > 0) {
-            if (k % 2 == 0) { p = p * p % m; k /= 2; }
-            else { a = a * p % m; k--; }
-        }
-        return a;
-    }
+#include <array>
+#include <cstdint>
 
-    inline bool sub (lint a, lint n, lint d, lint s) {
-        bool flag = true;
-        for (lint r = 0; r < s; r++) {
-            if (modpow(a, d, n) == n - 1) {
-                flag = false; break;
-            }
-            d <<= 1LL;
-        }
-        return flag;
-    }
+struct miller_rabin {
+	using u128 = __uint128_t;
+	using u64 = std::uint_fast64_t;
+	using u32 = std::uint_fast32_t;
+private :
+	static constexpr std::array<u64, 7> as = {2, 325, 9375, 28178, 450775, 9780504, 1795265022};
 
-    bool isprime (lint n) {
-        if (n < 2) return false;
-        lint d = n - 1, s = 0;
-        while (d % 2 == 0) { d /= 2; s++; }
-        if (n < 4759123141LL) {
-            for (const lint &a : v1) {
-                if (a == n) return true;
-                if (n < a) break;
-                if (modpow(a, d, n) == 1) continue;
-                if (sub(a, n, d, s)) return false;
-            }
-        } else if (n < 341550071728321LL) {
-            for (const lint &a : v2) {
-                if (a == n) return true;
-                if (n < a) break;
-                if (modpow(a, d, n) == 1) continue;
-                if (sub(a, n, d, s)) return false;
-            }
-        } else {
-            for (const lint &a : v3) {
-                if (a == n) return true;
-                if (n < a) break;
-                if (modpow(a, d, n) == 1) continue;
-                if (sub(a, n, d, s)) return false;
-            }
-        }
-        return true;
-    }
+	void mul (u64 &x1, u64 x2, const u64 &mod) {
+		u128 buff = x1;
+		buff = (buff * x2) % mod;
+		x1 = (u64)(buff);
+	}
+
+	u64 modpow (u64 x, u64 exp, const u64 &mod) {
+		u64 cur = 1;
+		while (exp) {
+			if (exp & 1) mul(cur, x, mod);
+			mul(x, x, mod); exp >>= 1;
+		}
+		return cur;
+	}
+
+	bool test (const u64 &a, const u64 &n, const u64 &d, const u32 &s) {
+		u64 cur = modpow(a, d, n);
+		if (cur == 1) return false;
+		for (u32 r = 0; r < s; r++) {
+			if (cur == n - 1) return false;
+			mul(cur, cur, n);
+		}
+		return true;
+	}
+
+public :
+	constexpr miller_rabin () = default;
+
+	template<class T>
+	bool operator() (const T &n) {
+		if (n < 2) return false;
+		if (n < 4) return true;
+		if (not (n & 1)) return false;
+		u64 d = n - 1; u32 s = 0;
+		while (not (d & 1)) { d >>= 1; s++; }
+		for (const u64 &a : as) {
+			if (n <= a) return true;
+			if (test(a, n, d, s)) return false;
+		}
+		return true;
+	}
 
 };
