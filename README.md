@@ -24,6 +24,7 @@
 - [x] queue aggregation
 - [x] skew heap
 - [x] matrix
+- [x] Li-Chao Tree
 
 ## geometric
 - [x] minimum inclusion circle
