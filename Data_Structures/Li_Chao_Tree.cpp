@@ -1,8 +1,9 @@
 #include <vector>
 #include <limits>
 #include <algorithm>
+#include <functional>
 
-template<class T>
+template<class T, class Compare = std::less<T>>
 struct li_chao_tree {
 	using value_type = T;
 	using reference = value_type &;
@@ -23,6 +24,7 @@ private :
 	};
 
 	size_type n;
+	const Compare comp;
 	std::vector<line> node;
 	std::vector<value_type> points;
 
@@ -39,9 +41,9 @@ private :
 			const_reference xl = points[l - n];
 			const_reference xc = points[mid - n];
 			const_reference xr = points[r - 1 - n];
-			bool left = (f(xl) < h(xl)), right = (f(xr) < h(xr));
+			bool left = comp(f(xl), h(xl)), right = comp(f(xr), h(xr));
 			if (left == right) { if (left) h = f; return; }
-			if (f(xc) < h(xc)) { std::swap(f, h); std::swap(left, right); }
+			if (comp(f(xc), h(xc))) { std::swap(f, h); std::swap(left, right); }
 			if (left) { i = (i << 1 | 0); r = mid; }
 			else { i = (i << 1 | 1); l = mid; }
 		}
@@ -59,7 +61,7 @@ private :
 	}
 
 public :
-	constexpr li_chao_tree () = default;
+	constexpr li_chao_tree () noexcept : comp() { }
 
 	void add_point (const_reference x) noexcept {
 		points.push_back(x);
@@ -80,17 +82,16 @@ public :
 		update(0, n, line(a, b));
 	}
 
-	// f(x) = ax + b [l, r)
 	void add_segment (const_reference a, const_reference b, size_type l, size_type r) {
 		update(index(l), index(r), line(a, b));
 	}
 
 	value_type get (const_reference x) noexcept {
-		value_type min = infty;
+		value_type minimum = infty;
 		for (size_type i = index(x) + n; i > 0; i >>= 1) {
-			chmin(min, node[i](x));
+			chmin(minimum, node[i](x));
 		}
-		return min;
+		return minimum;
 	}
 
 };
