@@ -6,7 +6,9 @@ struct miller_rabin {
 	using u64 = std::uint_fast64_t;
 	using u32 = std::uint_fast32_t;
 private :
-	static constexpr std::array<u64, 7> as = {2, 325, 9375, 28178, 450775, 9780504, 1795265022};
+	inline constexpr static std::array<u64, 7> a0 = {2, 3, 5, 7, 11, 13, 17};
+	inline constexpr static std::array<u64, 7> a1 = {2, 325, 9375, 28178, 450775, 9780504, 1795265022};
+	inline constexpr static u64 min_value = 341'550'071'728'321;
 
 	void mul (u64 &x1, u64 x2, const u64 &mod) {
 		u128 buff = x1;
@@ -41,11 +43,20 @@ public :
 		if (n < 2) return false;
 		if (n < 4) return true;
 		if (not (n & 1)) return false;
-		u64 d = n - 1; u32 s = 0;
-		while (not (d & 1)) { d >>= 1; s++; }
-		for (const u64 &a : as) {
-			if (n <= a) return true;
-			if (test(a, n, d, s)) return false;
+		if (n < min_value) {
+			u64 d = n - 1; u32 s = 0;
+			while (not (d & 1)) { d >>= 1; s++; }
+			for (const u64 &a : a0) {
+				if (n <= a) return true;
+				if (test(a, n, d, s)) return false;
+			}
+		} else {
+			u64 d = n - 1; u32 s = 0;
+			while (not (d & 1)) { d >>= 1; s++; }
+			for (const u64 &a : a1) {
+				if (n <= a) return true;
+				if (test(a, n, d, s)) return false;
+			}
 		}
 		return true;
 	}
