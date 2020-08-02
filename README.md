@@ -24,7 +24,7 @@
 - [x] queue aggregation
 - [x] skew heap
 - [x] matrix
-- [x] Li-Chao Tree
+- [x] li-chao Tree
 
 ## geometric
 - [x] minimum inclusion circle
@@ -52,6 +52,7 @@
 - [ ] topological sort
 - [ ] tree diameter
 - [x] two edge connected component
+- [x] cartesian tree
 
 ## number theory
 - [x] combination
