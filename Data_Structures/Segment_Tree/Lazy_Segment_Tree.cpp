@@ -1,104 +1,114 @@
 #include <vector>
 #include <functional>
 
-
-template<class T, class E>
+template<class T, class E, class F, class G, class H>
 struct lazy_segment_tree {
-	using F = std::function<T(T, T)>;
-	using G = std::function<T(T, E)>;
-	using H = std::function<E(E, E)>;
 	using value_type = T;
-	using operator_type = E;
-private : 
-	int n, hight;
-	F f;
-	G g;
-	H h;
-	value_type ie0;
-	operator_type ie1;
-	std::vector<value_type> node;
-	std::vector<operator_type> lazy;
+	using operand_type = E;
+	using size_type = std::size_t;
+private :
+	class node_type {
+	public :
+		value_type value;
+		operand_type operand;
+		node_type () = default;
+		node_type (const value_type &value, const operand_type &operand) noexcept
+			: value(value), operand(operand) { }
+	};
 
-	constexpr value_type reflect (int i) noexcept {
-		return ((lazy[i] == ie1) ? node[i] : g(node[i], lazy[i]));
+	size_type n;
+	const F f;
+	const G g;
+	const H h;
+	const value_type value_identity;
+	const operand_type operand_identity;
+	std::vector<node_type> node;
+
+	value_type reflect (const size_type &i) noexcept {
+		if (node[i].operand == operand_identity) return node[i].value;
+		return g(node[i].value, node[i].operand);
 	}
 
-	void propagate (int i) {
-		if (lazy[i] == ie1) return;
-		lazy[i << 1 | 0] = h(lazy[i << 1 | 0], lazy[i]);
-		lazy[i << 1 | 1] = h(lazy[i << 1 | 1], lazy[i]);
-		node[i] = reflect(i);
-		lazy[i] = ie1;
+	void merge (const size_type &i) noexcept {
+		node[i].value = f(reflect(i << 1 | 0), reflect(i << 1 | 1));
 	}
 
-	void topdown_update (int i) {
-		for (int j = hight; j > 0; j--) {
-			propagate(i >> j);
+	void add (const size_type &i, const operand_type &operand) noexcept {
+		node[i].operand = h(node[i].operand, operand);
+	}
+
+	void propagate (size_type i) noexcept {
+		if (node[i].operand == operand_identity) return;
+		add(i << 1 | 0, node[i].operand);
+		add(i << 1 | 1, node[i].operand);
+		node[i].value = reflect(i);
+		node[i].operand = operand_identity;
+	}
+
+	void topdown_update (size_type i) noexcept {
+		if (i == 0) return;
+		for (size_type h = 32 - __builtin_clz(i); h; h--) {
+			propagate(i >> h);
 		}
 	}
 
-	void bottomup_update (int i) {
-		while (i >>= 1) {
-			node[i] = f(reflect(i << 1 | 0), reflect(i << 1 | 1));
+	void bottomup_update (size_type i) noexcept {
+		if (i == 0) return;
+		for (i >>= 1; i > 0; i >>= 1) {
+			merge(i);
 		}
 	}
 
-public : 
-	lazy_segment_tree () { }
+public :
+	lazy_segment_tree (const value_type &value_identity, const operand_type &operand_identity, const F &f, const G &g, const H &h) noexcept :
+		value_identity(value_identity), operand_identity(operand_identity), f(f), g(g), h(h) { }
 
-	lazy_segment_tree (const F &f, const G &g, const H &h, const value_type &ie0, const operator_type &ie1) : 
-		f(f), g(g), h(h), ie0(ie0), ie1(ie1) { }
-
-	void reset (const F &f, const G &g, const H &h, const value_type &ie0, const operator_type &ie1) {
-		(this->f) = f; (this->g) = g; (this->h) = h;
-		(this->ie0) = ie0; (this->ie1) = ie1;
-		node.clear(); lazy.clear();
+	void assign (size_type _size) noexcept {
+		n = _size;
+		node.assign(_size << 1, node_type(value_identity, operand_identity));
 	}
 
-	void assign (int _n) {
-		n = 1; hight = 0;
-		while (n < _n) { n <<= 1; hight++; }
-		node.assign(2 * n, ie0);
-		lazy.assign(2 * n, ie1);
+	void assign(size_type _size, const value_type &value) noexcept {
+		assign(_size);
+		for (size_type i = n; i < node.size(); i++) node[i].value = value;
+		for (size_type i = n; i --> 0;) merge(i);
 	}
 
-	void assign (int _n, const value_type &x) {
-		assign(_n);
-		std::fill(node.begin() + n, node.end(), x);
-		for (int i = n; i--> 0;) {
-			node[i] = f(node[i << 1 | 0], node[i << 1 | 1]);
+	template<class InputIterator>
+	void assign (InputIterator first, InputIterator last) noexcept {
+		assign(last - first);
+		for (size_type i = n; first != last; first++, i++) node[i].value = (*first);
+		for (size_type i = n; i --> 0;) merge(i);
+	}
+
+	void update (size_type first, size_type last, const operand_type &operand) noexcept {
+		const size_type _first = first + n, _last = last + n - 1;
+		topdown_update(_first);
+		topdown_update(_last);
+		for (first += n, last += n; first != last; first >>= 1, last >>= 1) {
+			if (first & 1) add(first++, operand);
+			if (last  & 1) add(--last,  operand);
 		}
+		bottomup_update(_first);
+		bottomup_update(_last);
 	}
 
-	template<class Iterator>
-	void build (Iterator l, Iterator r) {
-		assign(r - l);
-		for (int i = n; l != r; i++, l++) node[i] = (*l);
-		for (int i = n - 1; i > 0; i--) {
-			node[i] = f(node[i << 1 | 0], node[i << 1 | 1]);
+	value_type fold (size_type first, size_type last) noexcept {
+		topdown_update(first + n);
+		topdown_update(last + n - 1);
+		value_type left = value_identity, right = value_identity;
+		for (first += n, last += n; first != last; first >>= 1, last >>= 1) {
+			if (first & 1) left = f(left, reflect(first++));
+			if (last & 1) right = f(reflect(--last), right);
 		}
-	}
-
-	void update (int a, int b, const operator_type &x) {
-		topdown_update(a + n);
-		topdown_update(b + n - 1);
-		for (int l = a + n, r = b + n; l < r; l >>= 1, r >>= 1) {
-			if (l & 1) { lazy[l] = h(lazy[l], x); l++; }
-			if (r & 1) { r--; lazy[r] = h(lazy[r], x); }
-		}
-		bottomup_update(a + n);
-		bottomup_update(b + n - 1);
-	}
-
-	value_type fold (int l, int r) {
-		topdown_update(l + n);
-		topdown_update(r + n - 1);
-		value_type vl = ie0, vr = ie0;
-		for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
-			if (l & 1) { vl = f(vl, reflect(l)); l++; }
-			if (r & 1) { r--; vr = f(reflect(r), vr); }
-		}
-		return f(vl, vr);
+		return f(left, right);
 	}
 
 };
+
+template<class InputIterator, class T, class E, class F, class G, class H>
+lazy_segment_tree<T, E, F, G, H> make_lazysegtree (InputIterator first, InputIterator last, const T &value_identity, const E &operand_identity, const F &f, const G &g, const H &h) {
+	lazy_segment_tree<T, E, F, G, H> tree(value_identity, operand_identity, f, g, h);
+	tree.assign(first, last);
+	return std::move(tree);
+}
