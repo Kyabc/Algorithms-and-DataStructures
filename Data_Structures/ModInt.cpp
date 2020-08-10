@@ -70,6 +70,14 @@ public :
 		return (modint(*this) /= p);
 	}
 
+	constexpr bool operator== (const modint &p) const noexcept {
+		return (x == p.x);
+	}
+
+	constexpr bool operator!= (const modint &p) const noexcept {
+		return (x != p.x);
+	}
+
 	constexpr modint pow (long long exp) const noexcept {
 		modint value(1), buff(x);
 		while (exp) {
@@ -81,7 +89,7 @@ public :
 	}
 
 	constexpr modint inverse () const noexcept {
-		return pow(Modulus - 2);
+		return pow(mod - 2);
 	}
 
 	friend std::ostream &operator<< (std::ostream &os, const modint &p) {

@@ -15,7 +15,6 @@
   - [x] union find
   - [x] partially persistent union find
   - [x] potentialized union find
-  - [x] 2D union find
 - **sparse table**
   - [x] sparse table
   - [x] disjoint sparse table
