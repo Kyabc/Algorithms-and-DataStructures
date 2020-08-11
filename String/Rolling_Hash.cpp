@@ -32,16 +32,18 @@ private :
 public :
 	constexpr rolling_hash () = default;
 
-	constexpr rolling_hash (const std::string &str) noexcept {
-		build(str);
+	template<class InputIterator>
+	constexpr rolling_hash (InputIterator first, InputIterator last) noexcept {
+		build(first, last);
 	}
 
-	void build (const std::string &str) noexcept {
-		const size_type n = str.length();
+	template<class InputIterator>
+	void build (InputIterator first, InputIterator last) noexcept {
+		const size_type n = (last - first);
 		hash.assign(n + 1, 0);
 		pow.assign(n + 1, 1);
-		for (size_type i = 0; i < n; i++) {
-			hash[i + 1] = mul(hash[i], base) + xorshift(str[i] + 1);
+		for (size_type i = 0; first != last; first++, i++) {
+			hash[i + 1] = mul(hash[i], base) + xorshift((*first) + 1);
 			pow[i + 1] = mul(pow[i], base);
 		}
 	}
