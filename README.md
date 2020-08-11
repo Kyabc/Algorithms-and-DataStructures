@@ -1,62 +1,67 @@
 # 🐙🐘🦍
 [kya](https://twitter.com/kya_ski)の競技プログラミングのライブラリです. 
-- [x] verify 済
-- [ ] 未 verify
+- [x] verified
+- [ ] not verified
 
 ***
 
 ## デー🐙う🐘
-- **segment tree**
-  - [x] segment tree
-  - [x] lazy segment tree
-  - [x] dynamic segment tree
-  - [x] dual segment tree
-- **union find**
-  - [x] union find
-  - [x] partially persistent union find
-  - [x] potentialized union find
-- **sparse table**
-  - [x] sparse table
-  - [x] disjoint sparse table
-- [x] binary trie
-- [x] modint
-- [x] queue aggregation
-- [x] skew heap
-- [x] matrix
-- [x] li-chao Tree
+- **Segment Tree**
+  - [x] Segment Tree
+  - [x] Lazy Segment Tree
+  - [x] Dual Segment Tree
+  - [x] Dynamic Segment Tree
+- **Union Find**
+  - [x] Union Find
+  - [x] Partially Persistent Union Find
+  - [x] Potentialized Union Find
+- **Sparse Table**
+  - [x] Sparse Table
+  - [x] Disjoint Sparse Table
+- [x] Binary Trie
+- [x] Modint
+- [x] Queue Aggregation
+- [x] Skew Heap
+- [x] Matrix
+- [x] Li-Chao Tree
 
-## geometric
-- [x] minimum inclusion circle
+## Geometric
+- [x] Minimum Inclusion circle
 
-## graph
-- **flow**
-  - [ ] dinic
-  - [ ] ford-fulkerson
-  - [ ] minimum cost flow (primal-dual?)
-- **minimum spanning tree**
-  - [x] directed mst
-  - [x] manhattan mst
-  - [x] mst (kruskal)
-- **shortest path**
-  - [x] bellman-ford
-  - [ ] bfs on complement graph
-  - [x] dijkstra
-  - [x] warshall-floyd
-- [x] graph template
-- [x] heavy light decomposition
-- [ ] low-link
-- [ ] lowest common ancestor
-- [ ] maximum independent set
-- [ ] strongly connected component
-- [ ] topological sort
-- [ ] tree diameter
-- [x] two edge connected component
-- [x] cartesian tree
+## Graph
+- **Flow**
+  - [ ] Dinic
+  - [ ] Ford-Fulkerson
+  - [ ] Minimum Cost Flow (Primal-Dual?)
+- **Minimum Spanning Tree**
+  - [x] Directed MST
+  - [x] Manhattan MST
+  - [x] MST (Kruskal)
+- **Shortest Path**
+  - [x] Bellman-Ford
+  - [ ] BFS on complement graph
+  - [x] Dijkstra
+  - [x] Warshall-Floyd
+- [x] Graph Template
+- [x] Heavy Light Decomposition
+- [ ] Low-Link
+- [ ] Lowest Common Ancestor
+- [ ] Maximum Independent Set
+- [ ] Strongly Connected Component
+- [ ] Topological Sort
+- [ ] Tree Diameter
+- [x] Two Edge Connected Component
+- [x] Cartesian Tree
 
-## number theory
-- [x] combination
-- [x] permutation
-- [ ] divisor
-- [ ] eratosthenes's sieve
-- [ ] euler's phi
-- [x] miller rabin
+## Number Theory
+- [x] Combination
+- [x] Permutation
+- [ ] Divisor
+- [ ] Eratosthenes's Sieve
+- [ ] Euler's Phi
+- [x] Miller-Rabin
+
+## String
+- [x] Rolling-Hash
+- [x] Z-Algorithm
+- [x] Moris-Pratt
