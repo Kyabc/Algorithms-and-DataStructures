@@ -1,70 +1,80 @@
 #include <memory>
 #include <functional>
+#include <cstdint>
 
-template<class T>
+template<class Tp>
 struct dynamic_segment_tree {
-    using value_type = T;
-    using const_reference = const value_type&;
-    using F = std::function<T(T, T)>;
-    using G = std::function<T(T, T)>;
-    using size_type = long long;
+	using const_reference = const Tp&;
+	using binary_op = std::function<Tp(Tp, Tp)>;
+	using size_type = std::uint_fast64_t;
+	using value_type = Tp;
 private :
-    struct node_type {
-    public :
-        value_type value;
-        std::unique_ptr<node_type> left, right;
-        node_type (const value_type &value) :
-            value(value), left(nullptr), right(nullptr) { }
-    };
+	struct node_type {
+	public :
+		value_type value;
+		std::unique_ptr<node_type> left, right;
+		node_type (const value_type &value)
+		noexcept : value(value), left(nullptr), right(nullptr) { }
+	};
 
-    using node_ptr = std::unique_ptr<node_type>;
+	using node_ptr = std::unique_ptr<node_type>;
 
-    size_type n;
-    const F f;
-    const G g;
-    const value_type ie;
-    node_ptr root;
+	size_type n;
+	node_ptr root;
+	const binary_op op;
+	const value_type identity;
 
-    value_type get_value (const node_ptr &node) const noexcept {
-        return (node ? (node->value) : ie);
-    }
+	const value_type &get (const node_ptr &node) const noexcept {
+		return (node ? (node->value) : identity);
+	}
 
-    value_type set_val (size_type i, const_reference x, node_ptr &node, size_type l, size_type r) {
-        if (r - l == 1) return node->value = g(node->value, x);
-        const size_type half = ((l + r) >> 1);
-        if (i < half) {
-            if (not node->left) node->left = std::make_unique<node_type>(ie);
-            return node->value = f(set_val(i, x, node->left, l, half), get_value(node->right));
-        } else {
-            if (not node->right) node->right = std::make_unique<node_type>(ie);
-            return node->value = f(get_value(node->left), set_val(i, x, node->right, half, r));
-        }
-    }
+	void make_node (node_ptr &node) noexcept {
+		if (not node) node = std::make_unique<node_type>(identity);
+	}
 
-    value_type fold (size_type a, size_type b, node_ptr &node, size_type l, size_type r) {
-        if (a <= l and r <= b) return node->value;
-        if (r <= a or  b <= l) return ie;
-        const size_type half = ((l + r) >> 1);
-        value_type left_value  = (node->left  ? fold(a, b, node->left,  l, half) : ie);
-        value_type right_value = (node->right ? fold(a, b, node->right, half, r) : ie);
-        return f(left_value, right_value);
-    }
+	value_type update (size_type i, const_reference x, node_ptr &node, size_type l, size_type r) {
+		if (r - l == 1) return node->value = x;
+		const size_type mid = ((l + r) >> 1);
+		if (i < mid) {
+			make_node(node->left);
+			return node->value = op(update(i, x, node->left, l, mid), get(node->right));
+		} else {
+			make_node(node->right);
+			return node->value = op(get(node->left), update(i, x, node->right, mid, r));
+		}
+	}
 
-public : 
-    dynamic_segment_tree (const F &f, const G &g, const_reference ie) :
-        f(f), g(g), ie(ie), root(std::make_unique<node_type>(ie)) { }
+	value_type fold (size_type a, size_type b, node_ptr &node, size_type l, size_type r) {
+		if (a <= l and r <= b) return node->value;
+		if (r <= a or  b <= l) return identity;
+		const size_type mid = ((l + r) >> 1);
+		value_type left_value  = (node->left ? fold(a, b, node->left,  l, mid) : identity);
+		value_type right_value = (node->right ? fold(a, b, node->right, mid, r) : identity);
+		return op(left_value, right_value);
+	}
 
-    void build (const size_type _n) noexcept {
-        n = size_type(1);
-        while (n < _n) n <<= 1;
-    }
+public :
+	dynamic_segment_tree (const_reference identity, const binary_op &op)
+	noexcept : n(0), root(std::make_unique<node_type>(identity)), op(op), identity(identity) { }
 
-    value_type set_val (size_type i, const_reference x) {
-        return set_val(i, x, root, 0, n);
-    }
+	dynamic_segment_tree (size_type _size, const_reference identity, const binary_op &op)
+	noexcept : root(std::make_unique<node_type>(identity)), op(op), identity(identity) { assign(_size); }
 
-    value_type fold (size_type l, size_type r) {
-        return fold(l, r, root, 0, n);
-    }
+	void assign (size_type _size) noexcept {
+		n = size_type(1);
+		while (n < _size) n <<= 1;
+	}
+
+	value_type fold (size_type first, size_type last) noexcept {
+		return fold(first, last, root, 0, n);
+	}
+
+	void update (size_type index, const_reference value) noexcept {
+		update(index, value, root, 0, n);
+	}
+
+	value_type operator[] (size_type index) noexcept {
+		return fold(index, index + 1);
+	}
 
 };
