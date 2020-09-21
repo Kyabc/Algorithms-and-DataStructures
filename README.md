@@ -23,7 +23,8 @@
 - [x] Queue Aggregation
 - [x] Skew Heap
 - [x] Matrix
-- [x] Li-Chao Tree
+- [x] Li-Chao Segment Tree
+- [x] Dynamic Li-Chao Segment Tree
 
 ## Geometric
 - [x] Minimum Inclusion circle
