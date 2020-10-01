@@ -1,97 +1,80 @@
-#include <vector>
+#include <memory>
 #include <limits>
-#include <algorithm>
 #include <functional>
+#include <algorithm>
 
-template<class T, class Compare = std::less<T>>
-struct li_chao_tree {
+template<class T, T Id = std::numeric_limits<T>::max(), class Compare = std::less<T>>
+struct dynamic_li_chao_tree {
 	using value_type = T;
-	using reference = value_type &;
-	using const_reference = const value_type &;
-	using size_type = std::size_t;
-
-	static constexpr value_type infty = std::numeric_limits<value_type>::max();
-
 private :
-	struct line {
-	private :
-		value_type a, b;
+	struct line;
+	struct node_type;
+	using node_ptr = std::unique_ptr<node_type>;
+
+	static constexpr value_type identity = Id;
+	node_ptr root;
+	const Compare comp;
+	value_type range_left, range_right;
+
+	class line {
+		value_type _a, _b;
+		bool _flag;
 	public :
-		line (const_reference a, const_reference b) noexcept : a(a), b(b) { }
-		value_type operator() (const_reference x) const noexcept {
-			return (a * x + b);
+		line () noexcept : _a(0), _b(0), _flag(false) { }
+		line (value_type a, value_type b) noexcept : _a(a), _b(b), _flag(true) { }
+		value_type operator() (value_type p) const noexcept {
+			return (_flag ? _a * p + _b : identity);
 		}
 	};
 
-	size_type n;
-	const Compare comp;
-	std::vector<line> node;
-	std::vector<value_type> points;
+	struct node_type {
+		line f;
+		node_ptr left, right;
+		node_type () noexcept : f(), left(nullptr), right(nullptr) { }
+		node_type (value_type a, value_type b)
+		noexcept : f(a, b), left(nullptr), right(nullptr) { }
+	};
 
-	size_type index (const_reference x) const noexcept {
-		return std::distance(points.begin(), std::lower_bound(points.begin(), points.end(), x));
-	}
-
-	void line_update (size_type i, line f) {
-		size_type l = i, r = i + 1;
-		while (l < n) { l <<= 1; r <<= 1; }
-		while (l < r) {
-			line &h = node[i];
-			const size_type mid = ((l + r) >> 1);
-			const_reference xl = points[l - n];
-			const_reference xc = points[mid - n];
-			const_reference xr = points[r - 1 - n];
-			bool left = comp(f(xl), h(xl)), right = comp(f(xr), h(xr));
-			if (left == right) { if (left) h = f; return; }
-			if (comp(f(xc), h(xc))) { std::swap(f, h); std::swap(left, right); }
-			if (left) { i = (i << 1 | 0); r = mid; }
-			else { i = (i << 1 | 1); l = mid; }
+	void update (value_type a, value_type b, node_ptr &node, line g, value_type l, value_type r) noexcept {
+		if (l >= r or r <= a or b <= l) return;
+		if (not node) node = std::make_unique<node_type>();
+		const value_type mid = (l + r) / 2;
+		if (a <= l and r <= b) {
+			line &h = node->f;
+			bool left = comp(g(l), h(l)), right = comp(g(r - 1), h(r - 1));
+			if (left == right) { if (left) h = g; return; }
+			if (comp(g(mid), h(mid))) { std::swap(g, h); std::swap(left, right); }
+			if (left) update(a, b, node->left, g, l, mid);
+			else update(a, b, node->right, g, mid, r);
+		} else {
+			update(a, b, node->left, g, l, mid);
+			update(a, b, node->right, g, mid, r);
 		}
 	}
 
-	void update (size_type l, size_type r, const line &f) {
-		for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
-			if (l & 1) line_update(l++, f);
-			if (r & 1) line_update(--r, f);
-		}
-	}
-
-	void chmin (reference x, const_reference y) noexcept {
-		if (x > y) x = y;
+	value_type get (value_type p, node_ptr &node, value_type l, value_type r) noexcept {
+		if (not node or p < l or r <= p) return identity;
+		const line &h = node->f;
+		if (r - l == 1) return h(p);
+		value_type mid = (l + r) / 2;
+		if (l <= p and p < mid) return std::min(h(p), get(p, node->left, l, mid));
+		else return std::min(h(p), get(p, node->right, mid, r));
 	}
 
 public :
-	constexpr li_chao_tree () noexcept : comp() { }
+	dynamic_li_chao_tree (value_type left, value_type right)
+	noexcept : root(std::make_unique<node_type>()), comp(), range_left(left), range_right(right) { }
 
-	void add_point (const_reference x) noexcept {
-		points.push_back(x);
+	void add_line (value_type a, value_type b) noexcept {
+		update(range_left, range_right, root, line(a, b), range_left, range_right);
 	}
 
-	void build () noexcept {
-		std::sort(points.begin(), points.end());
-		points.erase(std::unique(points.begin(), points.end()), points.end());
-		node.assign((n = points.size()) << 1, line(0, infty));
+	void add_segment (value_type a, value_type b, value_type first, value_type last) noexcept {
+		update(first, last, root, line(a, b), range_left, range_right);
 	}
 
-	template<class Iterator>
-	void build (Iterator first, Iterator last) noexcept {
-		points.assign(first, last); build();
-	}
-
-	void add_line (const_reference a, const_reference b) {
-		update(0, n, line(a, b));
-	}
-
-	void add_segment (const_reference a, const_reference b, size_type l, size_type r) {
-		update(index(l), index(r), line(a, b));
-	}
-
-	value_type get (const_reference x) noexcept {
-		value_type minimum = infty;
-		for (size_type i = index(x) + n; i > 0; i >>= 1) {
-			chmin(minimum, node[i](x));
-		}
-		return minimum;
+	value_type get (value_type x) noexcept {
+		return get(x, root, range_left, range_right);
 	}
 
 };
