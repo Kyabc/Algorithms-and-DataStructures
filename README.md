@@ -24,7 +24,6 @@
 - [x] Skew Heap
 - [x] Matrix
 - [x] Li-Chao Segment Tree
-- [x] Dynamic Li-Chao Segment Tree
 
 ## Geometric
 - [x] Minimum Inclusion circle
@@ -66,3 +65,5 @@
 - [x] Rolling-Hash
 - [x] Z-Algorithm
 - [x] Moris-Pratt
+- [x] Suffix Array
+- [x] LCP Array
