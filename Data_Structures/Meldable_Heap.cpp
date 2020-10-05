@@ -44,6 +44,7 @@ public :
 	}
 
 	const_reference top () const noexcept {
+		assert(not empty());
 		return root->key;
 	}
 
@@ -63,6 +64,7 @@ public :
 	}
 
 	void pop () noexcept {
+		assert(not empty());
 		--_size;
 		root = meld(std::move(root->left), std::move(root->right));
 	}
