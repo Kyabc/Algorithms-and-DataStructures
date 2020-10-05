@@ -25,6 +25,7 @@
 - [x] Matrix
 - [x] Li-Chao Segment Tree
 - [ ] Treap
+- [ ] Meldable Heap (Skew Heap)
 
 ## Geometric
 - [x] Minimum Inclusion circle
