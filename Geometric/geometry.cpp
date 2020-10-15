@@ -4,30 +4,37 @@
 #include <ios>
 #include <iomanip>
 #include <vector>
-
+#include <algorithm>
 
 namespace geo {
 
-
 // change as appropriate
 using default_type = double;
-static constexpr default_type EPS = 1e-10;
+static constexpr default_type EPS = 1e-12;
 static constexpr default_type pi = std::acos(-1);
 
+// class
 template<class Tp> struct point;
 template<class Tp> struct line;
 template<class Tp> struct segment;
 template<class Tp> struct circle;
 
-template<class Tp> using points = std::vector<point<Tp>>;
-template<class Tp> using polygon = std::vector<point<Tp>>;
-template<class Tp> using lines = std::vector<line<Tp>>;
-template<class Tp> using segments = std::vector<segment<Tp>>;
-template<class Tp> using circles = std::vector<circle<Tp>>;
+//alias
+template<class Tp = default_type> using points = std::vector<point<Tp>>;
+template<class Tp = default_type> using polygon = std::vector<point<Tp>>;
+template<class Tp = default_type> using lines = std::vector<line<Tp>>;
+template<class Tp = default_type> using segments = std::vector<segment<Tp>>;
+template<class Tp = default_type> using circles = std::vector<circle<Tp>>;
 
+// basic function
 void set_format (int n = 10) { std::cout << std::fixed << std::setprecision(n); }
 template<class Tp> inline bool eq (const Tp &a, const Tp &b) { return (std::fabs(a - b) <= EPS); }
+template<class Tp> inline bool chmax (Tp &a, const Tp &b) { if (a < b) { a = b; return 1; } return 0; }
+template<class Tp> inline bool chmin (Tp &a, const Tp &b) { if (a > b) { a = b; return 1; } return 0; }
+inline size_t next (const size_t &index, const size_t &n) { return (index + 1 == n ? 0 : index + 1); }
+inline size_t prev (const size_t &index, const size_t &n) { return (index == 0 ? n - 1 : index - 1); }
 
+// point class
 template<class Tp = default_type>
 struct point {
 	using reference = Tp&;
@@ -66,6 +73,7 @@ struct point {
 	friend std::ostream &operator<< (std::ostream &os, const point &p) { return (os << p.x << ' ' << p.y); }
 };
 
+// line class
 template<class Tp = default_type>
 struct line {
 	using const_reference = const Tp&;
@@ -83,18 +91,24 @@ struct line {
 	bool operator!= (const line &l) const noexcept { return ((p1 != l.p1 or p2 != l.p2) and (p1 != l.p2 or p2 != l.p1)); }
 };
 
+//segment class
 template<class Tp = default_type>
 struct segment : public line<Tp> {
+	using const_reference = const Tp&;
 	segment () = default;
+	segment (const_reference a, const_reference b, const_reference c, const_reference d) noexcept : line<Tp>(a, b, c, d) { }
 	segment (const point<Tp> &p1, const point<Tp> &p2) noexcept : line<Tp>(p1, p2) { }
 };
 
+// functions
 template<class Tp> inline point<Tp> conj (const point<Tp> &p) { return point<Tp>(p.x, -p.y); }
 template<class Tp> inline Tp norm (const point<Tp> &p) { return p.x * p.x + p.y * p.y; }
 template<class Tp> inline Tp abs (const point<Tp> &p) { return std::sqrt(norm(p)); }
 template<class Tp> inline Tp arg (const point<Tp> &p) { return std::atan2(p.y, p.x); }
 template<class Tp> inline Tp dot (const point<Tp> &p1, const point<Tp> &p2) { return p1.x * p2.x + p1.y * p2.y; }
 template<class Tp> inline Tp cross (const point<Tp> &p1, const point<Tp> &p2) { return p1.x * p2.y - p2.x * p1.y; }
+template<class Tp> inline bool compare_x (const point<Tp> &p1, const point<Tp> &p2) { return (eq(p1.x, p2.x) ? p1.y < p2.y : p1.x < p2.x); }
+template<class Tp> inline bool compare_y (const point<Tp> &p1, const point<Tp> &p2) { return (eq(p1.y, p2.y) ? p1.x < p2.x : p1.y < p2.y); }
 
 template<class Tp>
 point<Tp> projection (const line<Tp> &l, const point<Tp> &p) {
@@ -195,5 +209,69 @@ Tp distance (const segment<Tp> &lhs, const segment<Tp> &rhs) {
 	return std::min(a, b);
 }
 
-
+template<class Tp>
+Tp area (const polygon<Tp> &p) {
+	if (p.size() < 3) return 0.0;
+	Tp res = 0;
+	for (size_t i = 0; i < p.size(); i++) {
+		res += cross(p[i], p[(i + 1 < p.size() ? i + 1 : 0)]);
+	}
+	return res / 2.0;
 }
+
+template<class Tp>
+bool isconvex (const polygon<Tp> &p) {
+	const size_t n = p.size();
+	if (n < 3) return false;
+	bool f = true, g = true;
+	for (size_t i = 0; i < p.size() and (f or g); i++) {
+		const Tp cs = cross(p[prev(i, n)] - p[i], p[next(i, n)] - p[i]);
+		if (not eq(cs, 0.0)) ((cs > 0.0) ? f : g) = false;
+	}
+	return (f or g);
+}
+
+template<class Tp>
+polygon<Tp> convex_hull (polygon<Tp> p) {
+	std::sort(p.begin(), p.end(), compare_x<Tp>);
+	if (p.size() < 3) return p;
+	size_t k = 0;
+	polygon<Tp> ch(p.size() + 2);
+	auto crs = [&] (const size_t &i) {
+		return cross(ch[k - 2] - ch[k - 1], p[i] - ch[k - 1]);
+	};
+	for (size_t i = 0; i < p.size(); i++) {
+		while (k > 1 and crs(i) > EPS) k--;
+		ch[k++] = p[i];
+	}
+	for (size_t i = p.size() - 1, s = k; i > 0; i--) {
+		while (k > s and crs(i - 1) > EPS) k--;
+		ch[k++] = p[i - 1];
+	}
+	ch.resize(k - 1);
+	return ch;
+}
+
+template<class Tp>
+Tp convex_diameter (polygon<Tp> p) {
+	const auto c = convex_hull(p);
+	const size_t n = c.size();
+	if (n < 2) return 0.0;
+	if (n == 2) return abs(c[0] - c[1]);
+	Tp diameter = 0.0;
+	size_t i = 0, j = 0;
+	for (size_t k = 0; k < n; k++) {
+		if (not compare_x(c[i], c[k])) i = k;
+		if (compare_x(c[j], c[k])) j = k;
+	}
+	const size_t si = i, sj = j;
+	while (i != sj or j != si) {
+		chmax(diameter, abs(c[i] - c[j]));
+		if (cross(c[next(i, n)] - c[i], c[next(j, n)] - c[j]) < -EPS) i = next(i, n);
+		else j = next(j, n);
+	}
+	return diameter;
+}
+
+
+} // end of namespace geo
