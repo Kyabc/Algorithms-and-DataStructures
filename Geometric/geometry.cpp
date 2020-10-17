@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <vector>
 #include <algorithm>
+#include <limits>
 
 namespace geo {
 
@@ -170,6 +171,16 @@ bool intersect (const line<Tp> &lhs, const line<Tp> &rhs) {
 }
 
 template<class Tp>
+bool intersect(const line<Tp> &lhs, const segment<Tp> &rhs) {
+	return intersect(lhs.p1, lhs.p2, rhs.p1, rhs.p2);
+}
+
+template<class Tp>
+bool intersect(const segment<Tp> &lhs, const line<Tp> &rhs) {
+	return intersect(lhs.p1, lhs.p2, rhs.p1, rhs.p2);
+}
+
+template<class Tp>
 point<Tp> cross_point (const line<Tp> &lhs, const line<Tp> &rhs) {
 	assert(intersect(lhs, rhs));
 	const Tp a = cross(lhs.p2 - lhs.p1, rhs.p2 - rhs.p1);
@@ -180,7 +191,7 @@ point<Tp> cross_point (const line<Tp> &lhs, const line<Tp> &rhs) {
 
 template<class Tp>
 point<Tp> cross_point (const segment<Tp> &lhs, const segment<Tp> &rhs) {
-	assert(intersect(lhs, rhs));
+	assert(not parallel(lhs, rhs));
 	return cross_point(line<Tp>(lhs), line<Tp>(rhs));
 }
 
@@ -232,6 +243,22 @@ bool isconvex (const polygon<Tp> &p) {
 }
 
 template<class Tp>
+int include_point (const polygon<Tp> &p, const point<Tp> &s) {
+	// inside -> 2
+	// on the line -> 1
+	// outside  -> 0
+	bool flag = false;
+	enum { outside, on, inside };
+	for (size_t i = 0; i < p.size(); i++) {
+		point<Tp> a = p[i] - s, b = p[next(i, p.size())] - s;
+		if (a.y > b.y) std::swap(a, b);
+		if (a.y < EPS and b.y > EPS and cross(a, b) < -EPS) flag ^= true;
+		if (eq(cross(a, b), 0.0) and dot(a, b) < EPS) return on;
+	}
+	return (flag ? inside : outside);
+}
+
+template<class Tp>
 polygon<Tp> convex_hull (polygon<Tp> p) {
 	std::sort(p.begin(), p.end(), compare_x<Tp>);
 	if (p.size() < 3) return p;
@@ -272,6 +299,24 @@ Tp convex_diameter (polygon<Tp> p) {
 	}
 	return diameter;
 }
+
+
+template<class Tp>
+polygon<Tp> convex_cut (const polygon<Tp> &pol, const line<Tp> &cut) {
+	polygon<Tp> left;
+	for (size_t i = 0; i < pol.size(); i++) {
+		const point<Tp> &p = pol[i];
+		const point<Tp> &q = pol[next(i, pol.size())];
+		const int ccw = counter_clockwise(cut.p1, cut.p2, p);
+		if (ccw != -1) left.push_back(p);
+		if (ccw * counter_clockwise(cut.p1, cut.p2, q) < 0) {
+			if (parallel(cut, line<Tp>(p, q))) left.push_back(p);
+			else left.push_back(cross_point(cut, line<Tp>(p, q)));
+		}
+	}
+	return left;
+}
+
 
 
 } // end of namespace geo
