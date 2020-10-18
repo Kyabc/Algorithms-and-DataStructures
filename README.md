@@ -28,7 +28,7 @@
 - [ ] Meldable Heap (Skew Heap)
 
 ## Geometric
-- [x] Minimum Inclusion circle
+中身を見てください
 
 ## Graph
 - **Flow**

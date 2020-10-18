@@ -8,6 +8,8 @@
 #include <limits>
 #include <functional>
 #include <utility>
+#include <random>
+
 
 
 namespace geo {
@@ -17,7 +19,8 @@ namespace geo {
 using default_type = double;
 static constexpr default_type EPS = 1e-12;
 static constexpr default_type pi = std::acos(-1);
-static constexpr default_type infty = std::numeric_limits<default_type>::max() / 2.0;
+static constexpr default_type infty = std::numeric_limits<default_type>::max() / 2;
+
 // class
 template<class Tp> struct point;
 template<class Tp> struct line;
@@ -45,6 +48,9 @@ struct point {
 	using reference = Tp&;
 	using const_reference = const Tp&;
 	using value_type = Tp;
+private :
+	int type () const noexcept { if (y < -EPS) return -1; return (not eq<Tp>(y, 0) or x < -EPS); }
+public :
 	value_type x, y;
 	point () = default;
 	point (reference x, reference y) noexcept : x(x), y(y) { }
@@ -72,8 +78,12 @@ struct point {
 	template<class Scalar> constexpr point &operator/= (const Scalar &k) noexcept { x /= k; y /= k; return (*this); }
 	template<class Scalar> constexpr point operator* (const Scalar &k) const noexcept { return (point(*this) *= k); }
 	template<class Scalar> constexpr point operator/ (const Scalar &k) const noexcept { return (point(*this) /= k); }
-	bool operator== (const point &p) const noexcept { return (eq(x, p.x) and eq(y, p.y)); }
-	bool operator!= (const point &p) const noexcept { return (not (point(*this) == p)); }
+	constexpr bool operator== (const point &p) const noexcept { return (eq(x, p.x) and eq(y, p.y)); }
+	constexpr bool operator!= (const point &p) const noexcept { return (not (point(*this) == p)); }
+	constexpr bool operator< (const point &p) const noexcept { return (type() == p.type() ? x * p.y > y * p.x : type() < p.type()); }
+	constexpr bool operator<= (const point &p) const noexcept { return (point(*this) == p or point(*this) < p); }
+	constexpr bool operator> (const point &p) const noexcept { return (not point(*this) <= p); }
+	constexpr bool operator>= (const point &p) const noexcept { return (not point(*this) < p); }
 	friend std::istream &operator>> (std::istream &is, point &p) { value_type a, b; is >> a >> b; p = point(a, b); return (is); }
 	friend std::ostream &operator<< (std::ostream &os, const point &p) { return (os << p.x << ' ' << p.y); }
 };
@@ -88,12 +98,12 @@ struct line {
 	line (const point<Tp> &p1, const point<Tp> &p2) noexcept : p1(p1), p2(p2) { }
 	line (const_reference a, const_reference b, const_reference c, const_reference d) noexcept : p1(a, b), p2(c, d) { }
 	line (const_reference a, const_reference b, const_reference c) noexcept {
-		if (eq(a, 0)) { p1 = point<Tp>(0, c / b); p2 = point<Tp>(1, c / b); }
-		else if (eq(b, 0)) { p1 = point<Tp>(c / a, 0); p2 = point<Tp>(c / a, 1); }
+		if (eq<Tp>(a, 0)) { p1 = point<Tp>(0, c / b); p2 = point<Tp>(1, c / b); }
+		else if (eq<Tp>(b, 0)) { p1 = point<Tp>(c / a, 0); p2 = point<Tp>(c / a, 1); }
 		else { p1 = point<Tp>(0, c / b); p2 = point<Tp>(c / a, 0); }
 	}
-	bool operator== (const line &l) const noexcept { return ((p1 == l.p1 and p2 == l.p2) or (p1 == l.p2 and p2 == l.p1)); }
-	bool operator!= (const line &l) const noexcept { return (not (line(*this) == l)); }
+	constexpr bool operator== (const line &l) const noexcept { return ((p1 == l.p1 and p2 == l.p2) or (p1 == l.p2 and p2 == l.p1)); }
+	constexpr bool operator!= (const line &l) const noexcept { return (not (line(*this) == l)); }
 };
 
 //segment class
@@ -102,7 +112,7 @@ struct segment : public line<Tp> {
 	using const_reference = const Tp&;
 	segment () = default;
 	segment (const_reference a, const_reference b, const_reference c, const_reference d) noexcept : line<Tp>(a, b, c, d) { }
-	segment (const point<Tp> &p1, const point<Tp> &p2) noexcept : line<Tp>(p1, p2) { }
+	explicit segment (const point<Tp> &p1, const point<Tp> &p2) noexcept : line<Tp>(p1, p2) { }
 };
 
 // circle class
@@ -114,11 +124,12 @@ struct circle {
 	point<Tp> center;
 	value_type radius;
 	circle () = default;
-	circle (const point<Tp> &p, const_reference r) noexcept : center(p), radius(r) { }
+	explicit circle (const point<Tp> &p, const_reference r) noexcept : center(p), radius(r) { }
 	circle (reference x, reference y, reference r) noexcept : center(x, y), radius(r) { }
 	circle (const_reference x, const_reference y, const_reference r) noexcept : center(x, y), radius(r) { }
-	bool operator== (const circle &rhs) const noexcept { return (center == rhs.center and eq(radius, rhs.radius)); }
-	bool operator!= (const circle &rhs) const noexcept { return (not (circle(*this) == rhs)); }
+	explicit circle (const point<Tp> &p, const point<Tp> &q) noexcept : center(p + q / 2), radius(distance(p, q) / 2) { }
+	constexpr bool operator== (const circle &rhs) const noexcept { return (center == rhs.center and eq(radius, rhs.radius)); }
+	constexpr bool operator!= (const circle &rhs) const noexcept { return (not (circle(*this) == rhs)); }
 };
 
 // functions
@@ -129,9 +140,11 @@ template<class Tp> inline Tp abs (const point<Tp> &p) { return std::sqrt(norm(p)
 template<class Tp> inline Tp arg (const point<Tp> &p) { Tp d = std::atan2(p.y, p.x); return (d < -EPS ? d + pi * 2 : d); } // 偏角 (0 ≤ Θ ≤ 2π)
 template<class Tp> inline Tp dot (const point<Tp> &p1, const point<Tp> &p2) { return p1.x * p2.x + p1.y * p2.y; }          // 内積
 template<class Tp> inline Tp cross (const point<Tp> &p1, const point<Tp> &p2) { return p1.x * p2.y - p2.x * p1.y; }        // 外積
-template<class Tp> inline bool compare_x (const point<Tp> &p1, const point<Tp> &p2) { return (eq(p1.x, p2.x) ? p1.y < p2.y : p1.x < p2.x); }
-template<class Tp> inline bool compare_y (const point<Tp> &p1, const point<Tp> &p2) { return (eq(p1.y, p2.y) ? p1.x < p2.x : p1.y < p2.y); }
-template<class Tp> inline bool compare (const point<Tp> &p1, const point<Tp> &p2) { return (eq(p1.x, p2.x) ? compare_y(p1, p2) : compare_x(p1, p2)); }
+template<class Tp> inline bool comp_x (const point<Tp> &a, const point<Tp> &b) { return (eq(a.x, b.x) ? a.y < b.y : a.x < b.x); }
+template<class Tp> inline bool comp_y (const point<Tp> &a, const point<Tp> &b) { return (eq(a.y, b.y) ? a.x < b.x : a.y < b.y); }
+template<class Tp> inline bool comp (const point<Tp> &a, const point<Tp> &b) { return (eq(a.x, b.x) ? comp_y(a, b) : comp_x(a, b)); }
+// template<class Tp> inline bool up (const point<Tp> &p) { return (p.y > EPS or (eq<Tp>(p.y, (Tp)0) and p.x > -EPS)); }
+// template<class Tp> inline bool compare_arg (const point<Tp> &a, const point<Tp> &b) { return (up(a) == up(b) ? a.x * b.y > a.y * b.x : up(a) < up(b)); }
 
 // 点の回転
 template<class Tp>
@@ -173,7 +186,7 @@ point<Tp> projection (const line<Tp> &l, const point<Tp> &p) {
 // 点から直線への反射(直線に対して対称な点)
 template<class Tp>
 point<Tp> reflection (const line<Tp> &l, const point<Tp> &p) {
-	return (p + (projection(l, p) - p) * 2.0);
+	return (p + (projection(l, p) - p) * 2);
 }
 
 // 3 点の位置関係
@@ -190,7 +203,7 @@ int counter_clockwise (const point<Tp> &p0, const point<Tp> &p1, const point<Tp>
 // 平行判定
 template<class Tp>
 bool parallel (const point<Tp> &lhs, const point<Tp> &rhs) {
-	return eq(cross(lhs, rhs), 0.0);
+	return eq<Tp>(cross(lhs, rhs), 0);
 }
 
 template<class Tp>
@@ -201,7 +214,7 @@ bool parallel (const line<Tp> &lhs, const line<Tp> &rhs) {
 // 直交判定
 template<class Tp>
 bool orthogonal (const point<Tp> &lhs, const point<Tp> &rhs) {
-	return eq(dot(lhs, rhs), 0.0);
+	return eq<Tp>(dot(lhs, rhs), 0);
 }
 
 template<class Tp>
@@ -265,7 +278,7 @@ point<Tp> cross_point (const line<Tp> &lhs, const line<Tp> &rhs) {
 	assert(intersect(lhs, rhs));
 	const Tp a = cross(lhs.p2 - lhs.p1, rhs.p2 - rhs.p1);
 	const Tp b = cross(lhs.p2 - lhs.p1, lhs.p2 - rhs.p1);
-	if (eq(a, 0.0) and eq(b, 0.0)) return rhs.p1;
+	if (eq<Tp>(a, 0) and eq<Tp>(b, 0)) return rhs.p1;
 	return rhs.p1 + (rhs.p2 - rhs.p1) * b / a;
 }
 
@@ -327,7 +340,7 @@ Tp distance (const segment<Tp> &s, const point<Tp> &p) {
 
 template<class Tp>
 Tp distance (const segment<Tp> &lhs, const segment<Tp> &rhs) {
-	if (intersect(lhs, rhs)) return 0.0;
+	if (intersect(lhs, rhs)) return 0;
 	const Tp a = std::min(distance(lhs, rhs.p1), distance(lhs, rhs.p2));
 	const Tp b = std::min(distance(rhs, lhs.p1), distance(rhs, lhs.p2));
 	return std::min(a, b);
@@ -336,12 +349,12 @@ Tp distance (const segment<Tp> &lhs, const segment<Tp> &rhs) {
 // 多角形の面積
 template<class Tp>
 Tp area (const polygon<Tp> &p) {
-	if (p.size() < 3) return 0.0;
+	if (p.size() < 3) return 0;
 	Tp res = 0;
 	for (size_t i = 0; i < p.size(); i++) {
-		res += cross(p[i], p[(i + 1 < p.size() ? i + 1 : 0)]);
+		res += cross(p[i], p[next(i, p.size())]);
 	}
-	return res / 2.0;
+	return res / 2;
 }
 
 // 凸多角形判定
@@ -352,7 +365,7 @@ bool isconvex (const polygon<Tp> &p) {
 	bool f = true, g = true;
 	for (size_t i = 0; i < p.size() and (f or g); i++) {
 		const Tp cs = cross(p[prev(i, n)] - p[i], p[next(i, n)] - p[i]);
-		if (not eq(cs, 0.0)) ((cs > 0.0) ? f : g) = false;
+		if (not eq<Tp>(cs, 0)) ((cs > (Tp)0) ? f : g) = false;
 	}
 	return (f or g);
 }
@@ -369,7 +382,7 @@ int include_point (const polygon<Tp> &p, const point<Tp> &s) {
 		point<Tp> a = p[i] - s, b = p[next(i, p.size())] - s;
 		if (a.y > b.y) std::swap(a, b);
 		if (a.y < EPS and b.y > EPS and cross(a, b) < -EPS) flag ^= true;
-		if (eq(cross(a, b), 0.0) and dot(a, b) < EPS) return on;
+		if (eq<Tp>(cross(a, b), 0) and dot(a, b) < EPS) return on;
 	}
 	return (flag ? inside : outside);
 }
@@ -377,7 +390,7 @@ int include_point (const polygon<Tp> &p, const point<Tp> &s) {
 // 凸包
 template<class Tp>
 polygon<Tp> convex_hull (polygon<Tp> p) {
-	std::sort(p.begin(), p.end(), compare_x<Tp>);
+	std::sort(p.begin(), p.end(), comp_x<Tp>);
 	if (p.size() < 3) return p;
 	size_t k = 0;
 	polygon<Tp> ch(p.size() + 2);
@@ -401,9 +414,9 @@ template<class Tp>
 Tp convex_diameter (polygon<Tp> p) {
 	const auto c = convex_hull(p);
 	const size_t n = c.size();
-	if (n < 2) return 0.0;
+	if (n < 2) return 0;
 	if (n == 2) return abs(c[0] - c[1]);
-	Tp diameter = 0.0;
+	Tp diameter = 0;
 	size_t i = 0, j = 0;
 	for (size_t k = 0; k < n; k++) {
 		if (not compare_x(c[i], c[k])) i = k;
@@ -446,11 +459,47 @@ circle<Tp> incircle (const point<Tp> &a, const point<Tp> &b, const point<Tp> &c)
 // 三角形の外接円
 template<class Tp>
 circle<Tp> circumscribed_circle (const point<Tp> &a, const point<Tp> &b, const point<Tp> &c) {
-	const line<Tp> s((a + b) / 2.0, (a + b) / 2.0 + rotate90(b - a));
-	const line<Tp> t((b + c) / 2.0, (b + c) / 2.0 + rotate90(c - b));
+	const line<Tp> s((a + b) / 2, (a + b) / 2 + rotate90(b - a));
+	const line<Tp> t((b + c) / 2, (b + c) / 2 + rotate90(c - b));
 	const point<Tp> p = cross_point(s, t);
 	return circle<Tp>(p, distance(p, a));
 }
-	
+
+template<class Tp>
+bool inside (const circle<Tp> &c, const point<Tp> &p) {
+	return (distance(c.center, p) < c.radius + EPS);
+}
+
+template<class Tp>
+bool inside (const point<Tp> &p, const circle<Tp> &c) {
+	return (distance(c.center, p) < c.radius + EPS);
+}
+
+// 最小包含円(乱択/線形時間)
+template<class Tp>
+circle<Tp> min_inclusion_circle (points<Tp> ps, const int seed = 998244353) {
+	const size_t n = ps.size();
+	assert(n > 0);
+	if (n == 1) return circle<Tp>(ps[0], 0);
+	std::mt19937 engine(seed);
+	std::shuffle(ps.begin(), ps.end(), engine);
+	circle<Tp> d((ps[0] + ps[1]) / 2, norm((ps[0] - ps[1]) / 2));
+	for (size_t i = 2; i < n; i++) if (norm(ps[i] - d.center) > d.radius + EPS) {
+		std::shuffle(ps.begin(), ps.begin() + (i - 1), engine);
+		d = circle<Tp>((ps[0] + ps[i]) / 2, norm((ps[0] - ps[i]) / 2));
+		for (size_t j = 1; j < i; j++) if (norm(ps[j] - d.center) > d.radius + EPS) {
+			d = circle<Tp>((ps[i] + ps[j]) / 2, norm((ps[i] - ps[j]) / 2));
+			for (size_t k = 0; k < j; k++) if (norm(ps[k] - d.center) > d.radius + EPS) {
+				const Tp a = norm(ps[j] - ps[k]), b = norm(ps[k] - ps[i]), c = norm(ps[i] - ps[j]);
+				const Tp s = norm((ps[i] - ps[k]) * conj(ps[j] - ps[k]) - (ps[j] - ps[k]) * conj(ps[i] - ps[k]));
+				const point<Tp> p = (ps[i] * a * (b + c - a) + ps[j] * b * (c + a - b) + ps[k] * c * (a + b - c)) / s;
+				d = circle<Tp>(p, norm(p - ps[i]));
+			}
+		}
+	}
+	return circle<Tp>(d.center, std::sqrt(d.radius));
+}
+
+
 
 } // end of namespace geo
