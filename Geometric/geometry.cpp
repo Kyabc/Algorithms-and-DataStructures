@@ -143,8 +143,6 @@ template<class Tp> inline Tp cross (const point<Tp> &p1, const point<Tp> &p2) { 
 template<class Tp> inline bool comp_x (const point<Tp> &a, const point<Tp> &b) { return (eq(a.x, b.x) ? a.y < b.y : a.x < b.x); }
 template<class Tp> inline bool comp_y (const point<Tp> &a, const point<Tp> &b) { return (eq(a.y, b.y) ? a.x < b.x : a.y < b.y); }
 template<class Tp> inline bool comp (const point<Tp> &a, const point<Tp> &b) { return (eq(a.x, b.x) ? comp_y(a, b) : comp_x(a, b)); }
-// template<class Tp> inline bool up (const point<Tp> &p) { return (p.y > EPS or (eq<Tp>(p.y, (Tp)0) and p.x > -EPS)); }
-// template<class Tp> inline bool compare_arg (const point<Tp> &a, const point<Tp> &b) { return (up(a) == up(b) ? a.x * b.y > a.y * b.x : up(a) < up(b)); }
 
 // 点の回転
 template<class Tp>
