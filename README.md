@@ -54,6 +54,7 @@
 - [ ] Tree Diameter
 - [x] Two Edge Connected Component
 - [x] Cartesian Tree
+- [x] Hungarian method
 
 ## Number Theory
 - [x] Combination
