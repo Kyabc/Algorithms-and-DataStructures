@@ -44,6 +44,7 @@
   - [ ] BFS on complement graph
   - [x] Dijkstra
   - [x] Warshall-Floyd
+  - [x] Shortest Path Faster Algorithm
 - [x] Graph Template
 - [x] Heavy Light Decomposition
 - [ ] Low-Link
