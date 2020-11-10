@@ -1,118 +1,149 @@
 #include <vector>
-#include <stack>
 #include <queue>
-#include <functional>
+#include <stack>
+#include <utility>
+#include <cassert>
 
 struct heavy_light_decomposition {
-	using query = std::function<void(int, int)>;
 private :
-    std::vector<std::vector<int>> g;
-    std::vector<int> idx, xdi, par, hvy, head, sz, dep;
+	size_t count;
+	std::vector<std::vector<size_t>> g;
+	std::vector<size_t> index, parent, head;
 
-    void dfs (int r) {
-        std::stack<int> sta; sta.push(r);
-        dep[r] = 0; par[r] = -1;
-        while (not sta.empty()) {
-            int v = sta.top();
-            if (not sz[v]) {
-                sz[v] = 1;
-                for (int u : g[v]) {
-                    if (u == par[v]) continue;
-                    dep[u] = dep[v] + 1; par[u] = v;
-                    sta.push(u);
-                }
-            } else {
-                sta.pop();
-                int max_size = 0;
-                for (int u : g[v]) if (u != par[v]) {
-                    sz[v] += sz[u];
-                    if (max_size < sz[u]) {
-                        max_size = sz[u];
-                        hvy[v] = u;
-                    }
-                }
-            }
-        }
-    }
+	void dfs (size_t r, std::vector<size_t> &heavy) noexcept {
+		std::vector<size_t> subtree(size(), size());
+		std::stack<size_t> sta({r});
+		while (not sta.empty()) {
+			const size_t v = sta.top();
+			if (subtree[v] == size()) {
+				subtree[v] = 1;
+				for (const auto &u : g[v]) {
+					if (u == parent[v]) continue;
+					parent[u] = v; sta.push(u);
+				}
+			} else {
+				sta.pop();
+				size_t max_size = 0;
+				for (const auto &u : g[v]) {
+					if (u == parent[v]) continue;
+					subtree[v] += subtree[u];
+					if (max_size < subtree[u]) {
+						max_size = subtree[u];
+						heavy[v] = u;
+					}
+				}
+			}
+		}
+	}
 
-    void hld (int r, int &index) {
-        std::queue<int> que; que.push(r);
-        while (not que.empty()) {
-            int h = que.front(); que.pop();
-            for (int v = h; v != -1; v = hvy[v]) {
-                head[v] = h;
-                idx[v] = index++;
-                xdi[idx[v]] = v;
-                for (int u : g[v]) {
-                    if (u != par[v] and u != hvy[v]) {
-                        que.push(u);
-                    }
-                }
-            }
-        }
-    }
+	void decompose (size_t r, size_t &idx, const std::vector<size_t> &heavy) noexcept {
+		std::queue<size_t> que({r});
+		while (not que.empty()) {
+			const size_t h = que.front(); que.pop();
+			for (size_t v = h; v != size(); v = heavy[v]) {
+				head[v] = h; index[v] = idx++;
+				for (const auto &u : g[v]) {
+					if (u == parent[v] or u == heavy[v]) continue;
+					que.push(u);
+				}
+			}
+		}
+	}
 
-public : 
+public :
+	heavy_light_decomposition (size_t n)
+	noexcept : count(0), g(n), index(n, n), parent(n, n), head(n, n) { }
 
-    heavy_light_decomposition (int n) : 
-        g(n), idx(n, -1), xdi(n), par(n), hvy(n, -1), head(n), sz(n, 0), dep(n) { }
+	size_t size () const noexcept {
+		return g.size();
+	}
 
-    void add_edge (int u, int v) noexcept {
-        g[u].push_back(v);
-        g[v].push_back(u);
-    }
+	void add_edge (size_t v, size_t u) noexcept {
+		assert(v < size() and u < size() and ++count < size());
+		g[v].push_back(u); g[u].push_back(v);
+	}
 
-    void build () {
-        const int n = g.size(); int i = 0;
-        for (int v = 0; v < n; v++) if (not sz[v]) dfs(v);
-        for (int v = 0; v < n; v++) if (idx[v] == -1) hld(v, i);
-    }
+	void build () noexcept {
+		size_t idx = 0;
+		std::vector<size_t> heavy(size(), size());
+		for (size_t r = 0; r < size(); r++) {
+			if (parent[r] == size()) dfs(r, heavy);
+		}
+		for (size_t r = 0; r < size(); r++) {
+			if (index[r] == size()) decompose(r, idx, heavy);
+		}
+	}
 
-    void build (std::vector<int> root) {
-        int i = 0;
-        for (int r : root) { dfs(r); hld(r, i); }
-    }
+	void build (const std::vector<size_t> &roots) noexcept {
+		size_t idx = 0;
+		std::vector<size_t> heavy(size(), size());
+		for (const auto &r : roots) {
+			if (parent[r] == size()) dfs(r, heavy);
+		}
+		for (const auto &r : roots) {
+			if (index[r] == size()) decompose(r, idx, heavy);
+		}
+	}
 
-    void each_vertex (int u, int v, const query &f) {
-        while (true) {
-            if (idx[v] < idx[u]) std::swap(u, v);
-            if (head[u] == head[v]) {
-                f(idx[u], idx[v]);
-                break;
-            } else {
-                f(idx[head[v]], idx[v]);
-                v = par[head[v]];
-            }
-        }
-    }
+	size_t lca (size_t u, size_t v) const noexcept {
+		assert(u < size() and v < size());
+		for (; head[u] != head[v]; u = parent[head[u]]) {
+			if (index[u] < index[v]) std::swap(u, v);
+		}
+		return (index[u] < index[v] ? u : v);
+	}
 
-    void each_edge (int u, int v, const query &f) {
-        while (true) {
-            if (idx[v] < idx[u]) std::swap(u, v);
-            if (head[u] == head[v]) {
-                if (u != v) f(idx[u] + 1, idx[v]);
-                break;
-            } else {
-                f(idx[head[v]], idx[v]);
-                v = par[head[v]];
-            }
-        }
-    }
+	template<class Op>
+	void vertex_path (size_t u, size_t v, const Op &op) const noexcept {
+		assert(u < size() and v < size());
+		std::vector<std::pair<size_t, size_t>> right;
+		while (true) {
+			if (head[u] == head[v]) { op(index[u], index[v]); break; }
+			if (index[u] > index[v]) {
+				op(index[u], index[head[u]]);
+				u = parent[head[u]];
+			} else {
+				right.emplace_back(index[head[v]], index[v]);
+				v = parent[head[v]];
+			}
+		}
+		for (size_t i = right.size(); i > 0; i--) {
+			auto [l, r] = right[i - 1]; op(l, r);
+		}
+	}
 
-    int lca (int u, int v) {
-        while (true) {
-            if (idx[v] < idx[u]) std::swap(u, v);
-            if (head[u] != head[v]) v = par[head[v]];
-            else return (idx[u] < idx[v] ? u : v);
-        }
-    }
+	template<class Op>
+	void edge_path (size_t u, size_t v, const Op &op) const noexcept {
+		assert(u < size() and v < size());
+		std::vector<std::pair<size_t, size_t>> right;
+		while (true) {
+			if (head[u] == head[v]) {
+				if (u == v) break;
+				if (index[u] > index[v]) op(index[u], index[v] + 1);
+				else op(index[u] + 1, index[v]);
+				break;
+			}
+			if (index[u] > index[v]) {
+				op(index[u], index[head[u]]);
+				u = parent[head[u]];
+			} else {
+				right.emplace_back(index[head[v]], index[v]);
+				v = parent[head[v]];
+			}
+		}
+		for (size_t i = right.size(); i > 0; i--) {
+			auto [l, r] = right[i - 1]; op(l, r);
+		}
+	}
 
-    int distance (int u, int v) {
-        return (dep[u] + dep[v] - 2 * dep[lca(u, v)]);
-    }
+	const size_t &operator[] (size_t v) const noexcept {
+		assert(v < size());
+		return index[v];
+	}
 
-    const int operator[] (int v) const noexcept {
-        return (idx[v]);
-    }
+	const size_t &operator() (size_t u, size_t v) const noexcept {
+		assert(parent[u] == v or parent[v] == u);
+		return (index[u] > index[v] ? index[u] : index[v]);
+	}
 
 };
