@@ -1,105 +1,90 @@
 #include <vector>
 #include <functional>
-#include <cstddef>
 #include <cassert>
+#include <iterator>
 
-template<class T>
+template<class Tp>
 struct segment_tree {
-	using const_reference = const T&;
-	using size_type = std::size_t;
-	using value_type = T;
-	using binary_op = std::function<T(T, T)>;
+	using reference = Tp&;
+	using const_reference = const Tp&;
+	using size_type = size_t;
+	using value_type = Tp;
+	using binary_op = std::function<Tp(Tp, Tp)>;
 private :
-	const binary_op op;
-	const value_type identity;
+	value_type identity;
+	binary_op op;
+	size_type last_referenced;
 	std::vector<value_type> node;
 
-	void merge (size_type i) noexcept {
-		node[i] = op(node[i << 1 | 0], node[i << 1 | 1]);
+	void merge (size_type index) noexcept {
+		node[index] = op(node[index << 1 | 0], node[index << 1 | 1]);
+	}
+
+	void update (size_type index, size_type next_index = 0) noexcept {
+		for (index >>= 1; index > 0; index >>= 1) merge(index);
+		last_referenced = next_index;
 	}
 
 public :
-	segment_tree (const_reference identity, const binary_op &op)
-	: identity(identity), op(op) { }
+	segment_tree () = default;
 
-	segment_tree (size_type n, const_reference identity, const binary_op &op)
-	: node(n << 1, identity), identity(identity), op(op) { }
+	segment_tree (const_reference identity, const binary_op &op)
+	noexcept : identity(identity), op(op), node() { }
+
+	explicit segment_tree (size_type n, const_reference identity, const binary_op &op)
+	noexcept : identity(identity), op(op) { assign(n); }
 
 	segment_tree (size_type n, const_reference value, const_reference identity, const binary_op &op)
-	: node(n << 1, value), identity(identity), op(op) {
-		for (size_type i = n; i > 1; i--) merge(i - 1);
-	}
+	noexcept : identity(identity), op(op) { assign(n, value); }
 
-	template<class InputIterator>
-	explicit segment_tree (InputIterator first, InputIterator last, const_reference identity, const binary_op &op)
-	: node((last - first) << 1), identity(identity), op(op) {
-		assign(last - first);
-		for (size_type i = size(); first != last; i++, first++) node[i] = (*first);
-		for (size_type i = size(); i > 1; i--) merge(i - 1);
-	}
+	template<class InputIter>
+	segment_tree (InputIter first, InputIter last, const_reference identity, const binary_op &op)
+	noexcept : identity(identity), op(op) { assign(first, last); }
 
 	size_type size () const noexcept {
 		return (node.size() >> 1);
 	}
 
 	void assign (size_type n) noexcept {
+		last_referenced = 0;
 		node.assign(n << 1, identity);
 	}
 
 	void assign (size_type n, const_reference value) noexcept {
 		assign(n);
-		for (size_type i = n; i < node.size(); i++) node[i] = value;
-		for (size_type i = n; i > 1; i--) merge(i - 1);
+		for (size_type i = size(); i < node.size(); i++) node[i] = value;
+		for (size_type i = size(); i > 1; i--) merge(i - 1);
 	}
 
 	template<class InputIterator>
 	void assign (InputIterator first, InputIterator last) noexcept {
-		assign(last - first);
-		for (size_type i = size(); first != last; i++, first++) node[i] = (*first);
+		assign(std::distance(first, last));
+		for (size_type i = size(); i < node.size(); i++, first++) node[i] = *first;
 		for (size_type i = size(); i > 1; i--) merge(i - 1);
 	}
 
-	void update (size_type i,const_reference value) noexcept {
-		node[(i += size())] = value;
-		for (i >>= 1; i > 0; i >>= 1) merge(i);
+	void set (const_reference new_identity, const binary_op &new_op) noexcept {
+		identity = new_identity; op = new_op;
 	}
 
 	value_type fold (size_type first, size_type last) noexcept {
-		value_type vl = identity, vr = identity;
-		for (first += size(), last += size(); first != last; first >>= 1, last >>= 1) {
-			if (first & 1) vl = op(vl, node[first++]);
-			if (last  & 1) vr = op(node[--last],  vr);
+		update(last_referenced);
+		value_type left = identity, right = identity;
+		for (first += size(), last += size(); first < last; first >>= 1, last >>= 1) {
+			if (first & 1) left = op(left, node[first++]);
+			if (last & 1) right = op(node[--last], right);
 		}
-		return op(vl, vr);
+		return op(left, right);
 	}
 
-	const_reference operator[] (size_type i) const noexcept {
-		return node[i + size()];
+	reference operator[] (size_type index) noexcept {
+		update(last_referenced, (index += size()));
+		return node[index];
 	}
 
-	const_reference at (size_type i) const noexcept {
-		assert(i < size());
-		return node[i + size()];
+	reference at (size_type index) noexcept {
+		assert(index < size());
+		return operator[](index);
 	}
 
 };
-
-template<class T, class F>
-segment_tree<T> make_segtree (const T &identity, const F &op) {
-	return segment_tree<T>(identity, op);
-}
-
-template<class T, class F>
-segment_tree<T> make_segtree (std::size_t n, const T &identity, const F &op) {
-	return segment_tree<T>(n, identity, op);
-}
-
-template<class T, class F>
-segment_tree<T> make_segtree (std::size_t n, const T &value, const T &identity, const F &op) {
-	return segment_tree<T>(n, value, identity, op);
-}
-
-template<class InputIterator, class T, class F>
-segment_tree<T> make_segtree (InputIterator first, InputIterator last, const T &identity, const F &op) {
-	return segment_tree<T>(first, last, identity, op);
-}
