@@ -1,7 +1,6 @@
 #include <vector>
 #include <functional>
 #include <cassert>
-#include <iterator>
 
 template<class Tp>
 struct segment_tree {
