@@ -1,6 +1,6 @@
 #include <vector>
 
-template<int mod>
+template<std::int_fast32_t mod>
 struct permutation {
 private : 
     std::vector<modint<mod>> fact, ifact;
@@ -8,7 +8,7 @@ public :
     permutation(int n) : fact(n + 1), ifact(n + 1) {
         fact[0] = 1;
         for (int i = 1; i < n + 1; i++) fact[i] = (fact[i - 1] * i);
-        ifact[n] = fact[n].inverse();
+        ifact[n] = inverse(fact[n]);
         for (int i = n; i > 0; i--) ifact[i - 1] = ifact[i] * i;
     }
 
