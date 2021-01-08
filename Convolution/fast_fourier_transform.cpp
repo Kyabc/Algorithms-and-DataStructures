@@ -1,5 +1,3 @@
-// Cooley-Tukey FFT
-
 #include <vector>
 #include <complex>
 #include <cmath>
@@ -52,6 +50,7 @@ private :
 public :
 	template<class U>
 	static std::vector<Tp> convolution (const std::vector<U> &f, const std::vector<U> &g) {
+		if (f.empty() or g.empty()) return std::vector<Tp>();
 		size_t n = 1;
 		while (n < f.size() + g.size()) n <<= 1;
 		std::vector<complex_type> nf(n, 0), ng(n, 0);
