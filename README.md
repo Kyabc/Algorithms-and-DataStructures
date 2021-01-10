@@ -30,6 +30,10 @@
 ## Geometric
 中身を見てください
 
+## Convolution
+- [x] Fast Fourier Transform
+- [x] Number Theoretic Transform (NTT-friendly, 任意mod)
+
 ## Graph
 - **Flow**
   - [ ] Dinic
