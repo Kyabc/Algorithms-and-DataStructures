@@ -32,7 +32,7 @@
 
 ## Convolution
 - [x] Fast Fourier Transform
-- [x] Number Theoretic Transform (NTT-friendly, 任意mod)
+- [x] Number Theoretic Transform (NTT-friendly, any mod)
 
 ## Graph
 - **Flow**
