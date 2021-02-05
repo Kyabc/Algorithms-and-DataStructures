@@ -24,12 +24,9 @@
 - [x] Skew Heap
 - [x] Matrix
 - [x] Li-Chao Segment Tree
-<<<<<<< Updated upstream
 - [ ] Treap
 - [ ] Meldable Heap (Skew Heap)
-=======
 - [x] Meldable Heap
->>>>>>> Stashed changes
 
 ## Geometric
 中身を見てください
