@@ -33,13 +33,22 @@ private :
 	}
 
 public :
+<<<<<<< Updated upstream
 	meldable_heap () noexcept : root(nullptr), _size(0) { }
+=======
+	explicit meldable_heap (const Compare &x = Compare())
+	noexcept : comp(x), root(nullptr), _size(0) { }
+>>>>>>> Stashed changes
 
 	bool empty () const noexcept {
 		return (_size == 0);
 	}
 
+<<<<<<< Updated upstream
 	const size_type &size () const noexcept {
+=======
+	const size_type& size () const noexcept {
+>>>>>>> Stashed changes
 		return _size;
 	}
 
@@ -53,13 +62,21 @@ public :
 		root = meld(std::move(root), std::make_unique<node_type>(x));
 	}
 
+<<<<<<< Updated upstream
 	void push (reference x) noexcept {
+=======
+	void push (value_type&& x) noexcept {
+>>>>>>> Stashed changes
 		++_size;
 		root = meld(std::move(root), std::make_unique<node_type>(x));
 	}
 
 	template<class... Args>
+<<<<<<< Updated upstream
 	void emplace(Args... args) noexcept {
+=======
+	void emplace(Args&&... args) noexcept {
+>>>>>>> Stashed changes
 		push(value_type(args...));
 	}
 
@@ -69,12 +86,22 @@ public :
 		root = meld(std::move(root->left), std::move(root->right));
 	}
 
+<<<<<<< Updated upstream
 	void swap (meldable_heap &rhs) noexcept {
 		root.swap(rhs.root);
 		std::swap(_size, rhs._size);
 	}
 
 	void meld (meldable_heap &rhs) noexcept {
+=======
+	void swap (meldable_heap& rhs) noexcept {
+		root.swap(rhs.root);
+		std::swap(_size, rhs._size);
+		std::swap(comp, rhs.comp);
+	}
+
+	void meld (meldable_heap& rhs) noexcept {
+>>>>>>> Stashed changes
 		_size += rhs.size();
 		rhs._size = 0;
 		root = meld(std::move(root), std::move(rhs.root));
