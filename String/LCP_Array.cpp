@@ -1,7 +1,7 @@
 template<class InputIterator>
 std::vector<size_t> lcp_array (InputIterator first, InputIterator last) {
 	if (first == last) return std::vector<size_t>();
-	const size_t n = (last - first);
+	const size_t n = std::distance(first, last);
 	const std::vector<size_t> sa = suffix_array(first, last);
 	const std::vector<char> s(first, last);
 	std::vector<size_t> rank(n), lcp(n - 1);

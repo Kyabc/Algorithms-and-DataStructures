@@ -2,10 +2,11 @@
 #include <algorithm>
 #include <numeric>
 #include <cstdint>
+#include <iterator>
 
 template<class InputIterator>
 std::vector<size_t> suffix_array (InputIterator first, InputIterator last) {
-	const size_t n = (last - first);
+	const size_t n = std::distance(first, last);
 	std::vector<size_t> sa(n);
 	std::iota(sa.begin(), sa.end(), 0);
 	std::vector<std::int32_t> rank(first, last), buff(n);

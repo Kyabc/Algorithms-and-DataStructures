@@ -1,10 +1,10 @@
 #include <vector>
 
-template<class RandomAccessIterator>
-std::vector<int> moris_pratt (RandomAccessIterator first, RandomAccessIterator last) {
-	const int n = (last - first);
-	std::vector<int> mp(n + 1); mp[0] = -1;
-	for (int i = 0, j = -1; i < n; i++) {
+template<class InputIterator>
+std::vector<std::ptrdiff_t> moris_pratt (InputIterator first, InputIterator last) {
+	const std::ptrdiff_t n = std::distance(first, last);
+	std::vector<std::ptrdiff_t> mp(n + 1); mp[0] = -1;
+	for (std::ptrdiff_t i = 0, j = -1; i < n; i++) {
 		while (j >= 0 and *(first + i) != *(first + j)) j = mp[j];
 		mp[i + 1] = ++j;
 	}
