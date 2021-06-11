@@ -6,9 +6,9 @@
 template <typename T>
 std::vector<T> dijkstra(const graph<T> &g, int s){
     using P = std::pair<T, int>;
-    std::vector<T> ret(g.size(), -1);
+    std::vector<T> ret(g.size(), -1); ret[s] = 0;
     std::priority_queue<P, std::vector<P>, std::greater<P>> que;
-    que.emplace(ret[s], s); ret[s] = 0;
+    que.emplace(ret[s], s); 
     while (not que.empty()) {
         int v; T c;
         std::tie(c, v) = que.top();
