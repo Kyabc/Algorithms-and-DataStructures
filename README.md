@@ -1,11 +1,11 @@
-# 🐙🐘🦍
-[kya](https://twitter.com/kya_ski)の競技プログラミングのライブラリです. 
+# データ構造とアルゴリズム
+[kya](https://twitter.com/kya_kpr)の競技プログラミングのライブラリです. 
 - [x] verified
 - [ ] not verified
 
 ***
 
-## デー🐙う🐘
+## データ構造
 - **Segment Tree**
   - [x] Segment Tree
   - [x] Lazy Segment Tree
@@ -27,9 +27,10 @@
 - [ ] Treap
 - [ ] Meldable Heap (Skew Heap)
 - [x] Meldable Heap
+- [x] Slope Trick
 
 ## Geometric
-中身を見てください
+- [x] geometric
 
 ## Convolution
 - [x] Fast Fourier Transform
